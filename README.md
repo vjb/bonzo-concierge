@@ -1,99 +1,83 @@
-# Bonzo Concierge
+# Bonzo Concierge (Hedera Apex Hackathon 2026)
 
-An AI-powered DeFi assistant that lets users interact with the Hedera network through natural language and voice. Built for the Bonzo Finance hackathon.
+**Bonzo Concierge** is an AI-powered conversational agent that allows users to interact with the Bonzo Finance protocol and Hedera network using pure natural language and voice. 
 
-## What It Does
+Built for the **Hedera Hello Future Apex Hackathon** (AI & Agents Track + Bonzo Intent-Based UI Bounty).
 
-Users type or speak commands like "What's my HBAR balance?" or "Send 5 HBAR to 0.0.1234" and the AI agent executes real on-chain transactions on Hedera Testnet. Every transaction is verifiable on [HashScan](https://hashscan.io/testnet).
+> *Please see `PRESENTATION.md` for the full pitch, business model, and hackathon judging criteria breakdown.*
 
-### Capabilities
+---
 
-| Tool | Description |
-|------|-------------|
-| `check_balance` | Query the HBAR balance of any Hedera account |
-| `transfer_hbar` | Send HBAR to any account via `TransferTransaction` |
-| `deposit_to_vault` | Deposit HBAR into a Bonzo vault smart contract |
+## 🚀 Features
 
-### Voice Interaction
+- **Voice-to-DeFi (Web Speech API + ElevenLabs TTS):** Click the mic, say *"Supply 50 HBAR to Bonzo,"* and the AI handles the rest.
+- **Transparent Execution Trace:** A sleek terminal UI embedded in the chat bubble shows exactly what the agent is doing under the hood (querying balances, fetching yields, executing transactions), complete with real HashScan links.
+- **Walletless "Agent Treasury":** Users do not need a browser extension wallet. The AI acts as a sophisticated keeper/operator, executing trades on their behalf via Hedera Core SDK.
+- **Bonzo Yield Oracle:** The agent can query and compare current supply/borrow APYs for HBAR, USDC, and WBTC.
 
-Click the microphone button to speak commands. The app uses the browser's Web Speech API for speech-to-text and ElevenLabs for text-to-speech, creating a full voice conversation loop with the blockchain.
+---
 
-## Architecture
+## 🛠️ Architecture & Tech Stack
 
-```
-User (voice/text)
+```text
+User (Voice/Text)
   │
-  ├─► Next.js Frontend (React, Vercel AI SDK v6)
-  │     └─ useChat hook → streams messages
+  ├─► Next.js Frontend (React 19, Tailwind v4)
+  │     └─ Vercel AI SDK v6 `useChat` hook (streams UI)
   │
   ├─► /api/chat (POST)
-  │     ├─ streamText + GPT-4o-mini
-  │     ├─ Tool: check_balance → AccountBalanceQuery
-  │     ├─ Tool: transfer_hbar → TransferTransaction
-  │     └─ Tool: deposit_to_vault → ContractExecuteTransaction
+  │     ├─ OpenAI GPT-4o-mini (Intent Router)
+  │     ├─ Tool 1: get_bonzo_apys (Yield Oracle)
+  │     ├─ Tool 2: supply_to_bonzo (Hedera ContractExecute/Transfer)
+  │     ├─ Tool 3: check_balance (Hedera AccountBalanceQuery)
+  │     └─ Tool 4: transfer_hbar (Hedera TransferTransaction)
   │
   └─► /api/tts (POST)
         └─ ElevenLabs text-to-speech proxy
 ```
 
-## Tech Stack
+---
 
-- **Frontend**: Next.js 15, React 19, Vercel AI SDK v6, Tailwind CSS v4
-- **AI**: OpenAI GPT-4o-mini with function calling
-- **Blockchain**: Hedera SDK (`@hashgraph/sdk`)
-- **Voice**: Web Speech API (STT), ElevenLabs (TTS)
-- **Language**: TypeScript
+## 💻 Local Development Setup
 
-## Setup
-
+### 1. Clone & Install
 ```bash
 git clone https://github.com/vjb/bonzo-concierge.git
 cd bonzo-concierge
 npm install
 ```
 
-Create a `.env` file:
+### 2. Environment Variables
+Create a `.env` file in the root directory:
 
 ```env
+# AI Models
 OPENAI_API_KEY=sk-...
+ELEVEN_LABS_KEY=sk_...
+
+# Hedera Agent Treasury (Testnet)
 HEDERA_ACCOUNT_ID=0.0.XXXXXX
 HEDERA_PRIVATE_KEY=302e...
 HEDERA_NETWORK=testnet
-ELEVEN_LABS_KEY=sk_...
 ```
 
-Run the dev server:
-
+### 3. Run the Server
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Navigate to [http://localhost:3000](http://localhost:3000) to start talking to the blockchain.
 
-## Demo Flow
+---
 
-1. Open the app and click "What's my HBAR balance?"
-2. The agent calls `check_balance` and displays the result with a transparent execution trace
-3. Say or type "Send 1 HBAR to 0.0.8327760"
-4. The agent executes a real `TransferTransaction` on Hedera Testnet
-5. Click the HashScan link to verify the on-chain transaction
+## 🎥 Hackathon Demo Script Flow
 
-## Project Structure
+1. **Verify Balance:** Click the suggested prompt *"What's my HBAR balance?"*. The execution trace will ping the Hedera testnet and return the operator's current balance.
+2. **Oracle Query Check:** Ask *"What are the best yields on Bonzo?"*. Watch the Agent render a specialized UI grid of the APYs, and listen to the ElevenLabs TTS response.
+3. **Intent Execution:** Click the mic and say, *"Supply 50 HBAR to Bonzo."*
+4. **On-Chain Settlement:** The agent will execute the on-chain standard transfer simulating the Bonzo supply pool. Click the returned **View on HashScan** link to prove the execution to the judges.
 
-```
-src/
-├── app/
-│   ├── api/
-│   │   ├── chat/route.ts    # AI agent with Hedera tools
-│   │   └── tts/route.ts     # ElevenLabs TTS proxy
-│   ├── globals.css           # Design system
-│   ├── layout.tsx            # Root layout with Inter font
-│   └── page.tsx              # Chat UI with voice + execution trace
-scripts/
-├── test_api_route.ts         # API integration test
-└── test_hbar_transfer.ts     # Live transfer test
-```
+---
 
 ## License
-
 MIT
