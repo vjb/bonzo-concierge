@@ -72,7 +72,7 @@ HEDERA_NETWORK=testnet
 npm run dev
 ```
 
-Navigate to [http://localhost:3000](http://localhost:3000) to start talking to the blockchain.
+Navigate to [https://bonzo-concierge.vercel.app/](https://bonzo-concierge.vercel.app/) to start talking to the blockchain.
 
 ## License
 MIT
