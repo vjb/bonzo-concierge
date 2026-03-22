@@ -24,9 +24,10 @@ export async function GET() {
     const balance = await new AccountBalanceQuery()
       .setAccountId(AccountId.fromString(accountId))
       .execute(c);
+    const hbarValue = balance.hbars.toBigNumber().toNumber();
     return Response.json({
       accountId,
-      balanceInHbar: balance.hbars.toString(),
+      balanceInHbar: Math.round(hbarValue).toString() + " HBAR",
     });
   } catch (err) {
     return Response.json(
