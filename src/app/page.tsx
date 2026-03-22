@@ -1,11 +1,11 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
-import { useRef, useEffect, useState, type FormEvent } from "react";
+import { useRef, useEffect, useState, useCallback, type FormEvent } from "react";
 import type { UIMessage } from "ai";
 
 // ────────────────────────────────────────────────────────
-// Helper: extract text & tool parts from a UIMessage
+// Helpers
 // ────────────────────────────────────────────────────────
 function getTextParts(msg: UIMessage): string {
   return msg.parts
@@ -31,7 +31,28 @@ function getToolParts(msg: UIMessage): ToolInvocationPart[] {
 }
 
 // ────────────────────────────────────────────────────────
-// Main Chat Page
+// TTS helper
+// ────────────────────────────────────────────────────────
+async function speakText(text: string) {
+  try {
+    const res = await fetch("/api/tts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text }),
+    });
+    if (!res.ok) return;
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const audio = new Audio(url);
+    audio.play();
+    audio.onended = () => URL.revokeObjectURL(url);
+  } catch {
+    // TTS is best-effort, don't break the app
+  }
+}
+
+// ────────────────────────────────────────────────────────
+// Chat Page
 // ────────────────────────────────────────────────────────
 export default function ChatPage() {
   const { messages, sendMessage, status } = useChat();
@@ -39,21 +60,66 @@ export default function ChatPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [mounted, setMounted] = useState(false);
+  const [listening, setListening] = useState(false);
+  const [voiceMode, setVoiceMode] = useState(false);
+  const lastSpokenRef = useRef<string | null>(null);
 
   useEffect(() => setMounted(true), []);
-
-  // Auto-scroll on new messages
   useEffect(() => {
     scrollRef.current?.scrollTo({
       top: scrollRef.current.scrollHeight,
       behavior: "smooth",
     });
   }, [messages]);
-
-  // Focus input on load
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
+
+  // Auto-TTS: speak the last assistant message when streaming finishes
+  useEffect(() => {
+    if (status !== "ready" || !voiceMode || messages.length === 0) return;
+    const lastMsg = messages[messages.length - 1];
+    if (lastMsg.role !== "assistant") return;
+    const text = getTextParts(lastMsg);
+    if (text && text !== lastSpokenRef.current) {
+      lastSpokenRef.current = text;
+      speakText(text);
+    }
+  }, [messages, status, voiceMode]);
+
+  // ── Speech Recognition ──
+  const startListening = useCallback(() => {
+    const SpeechRecognition =
+      (window as unknown as { SpeechRecognition?: typeof window.SpeechRecognition }).SpeechRecognition ||
+      (window as unknown as { webkitSpeechRecognition?: typeof window.SpeechRecognition }).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Speech recognition not supported in this browser.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = "en-US";
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.onstart = () => setListening(true);
+
+    recognition.onresult = (event: { results: { transcript: string }[][] }) => {
+      const transcript = event.results[0][0].transcript;
+      setInput(transcript);
+      setVoiceMode(true);
+      // Auto-submit after a short delay for visual feedback
+      setTimeout(() => {
+        setInput("");
+        sendMessage({ text: transcript });
+      }, 300);
+    };
+
+    recognition.onerror = () => setListening(false);
+    recognition.onend = () => setListening(false);
+
+    recognition.start();
+  }, [sendMessage]);
 
   if (!mounted) return null;
 
@@ -64,111 +130,142 @@ export default function ChatPage() {
     const text = input.trim();
     if (!text || isStreaming) return;
     setInput("");
+    setVoiceMode(false);
     sendMessage({ text });
   }
 
   return (
-    <main className="flex-1 flex flex-col h-screen max-w-3xl mx-auto w-full">
-      {/* ── Header ── */}
-      <header className="flex items-center gap-3 px-6 py-4 border-b border-[var(--border)]">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-xl font-bold shadow-lg shadow-indigo-500/20">
-          B
-        </div>
-        <div>
-          <h1 className="text-lg font-semibold tracking-tight">
-            Bonzo Concierge
-          </h1>
-          <p className="text-xs text-gray-500">Hedera DeFi Assistant</p>
-        </div>
-        <div className="ml-auto flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="text-xs text-gray-500">Testnet</span>
-        </div>
-      </header>
+    <>
+      {/* Animated background glow */}
+      <div className="bg-glow" />
 
-      {/* ── Messages ── */}
-      <div
-        ref={scrollRef}
-        className="flex-1 overflow-y-auto px-6 py-6 space-y-4"
-      >
-        {messages.length === 0 && (
-          <div className="flex flex-col items-center justify-center h-full text-center space-y-6 opacity-60">
-            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-600/20 border border-indigo-500/20 flex items-center justify-center">
-              <span className="text-4xl">🏦</span>
-            </div>
-            <div>
-              <p className="text-lg font-medium text-gray-300">
-                Welcome to Bonzo Concierge
-              </p>
-              <p className="text-sm text-gray-500 mt-1 max-w-md">
-                I can check balances, transfer HBAR, and deposit into
-                Bonzo vaults. Try:
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2 justify-center">
-              {[
-                "What's my HBAR balance?",
-                "Send 1 HBAR to 0.0.1234",
-                "What can you do?",
-              ].map((suggestion) => (
-                <button
-                  key={suggestion}
-                  onClick={() => setInput(suggestion)}
-                  className="px-3 py-1.5 text-xs rounded-lg border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-hover)] text-gray-400 hover:text-gray-200 transition-all cursor-pointer"
-                >
-                  {suggestion}
-                </button>
-              ))}
-            </div>
+      <main className="relative z-10 flex-1 flex flex-col h-screen max-w-3xl mx-auto w-full">
+        {/* ── Header ── */}
+        <header className="flex items-center gap-3 px-6 py-4 border-b border-white/[0.06]">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center text-xl font-bold shadow-lg shadow-violet-500/20">
+            B
           </div>
-        )}
-
-        {messages.map((msg) => (
-          <MessageBubble key={msg.id} message={msg} />
-        ))}
-
-        {isStreaming && (
-          <div className="flex items-center gap-2 text-xs text-gray-500 pl-12">
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
-            Thinking...
+          <div>
+            <h1 className="text-lg font-semibold tracking-tight text-white">
+              Bonzo Concierge
+            </h1>
+            <p className="text-xs text-zinc-500">Hedera DeFi Assistant</p>
           </div>
-        )}
-      </div>
+          <div className="ml-auto flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-xs text-zinc-500">Testnet</span>
+          </div>
+        </header>
 
-      {/* ── Input ── */}
-      <div className="px-6 pb-6 pt-2">
-        <form
-          onSubmit={handleSubmit}
-          className="relative flex items-center gap-3 p-1 rounded-2xl border border-[var(--border)] bg-[var(--surface)] backdrop-blur-xl focus-within:border-indigo-500/40 focus-within:shadow-lg focus-within:shadow-indigo-500/10 transition-all"
+        {/* ── Messages ── */}
+        <div
+          ref={scrollRef}
+          className="flex-1 overflow-y-auto px-6 py-6 space-y-4"
         >
-          <input
-            ref={inputRef}
-            id="chat-input"
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Tell me what you'd like to do..."
-            disabled={isStreaming}
-            className="flex-1 bg-transparent px-4 py-3 text-sm text-gray-100 placeholder-gray-600 outline-none disabled:opacity-50"
-          />
-          <button
-            type="submit"
-            disabled={isStreaming || !input.trim()}
-            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-sm font-medium hover:from-indigo-400 hover:to-purple-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-lg shadow-indigo-500/20 mr-1 cursor-pointer"
+          {messages.length === 0 && (
+            <div className="flex flex-col items-center justify-center h-full text-center space-y-6 opacity-70">
+              <div className="w-20 h-20 rounded-2xl glass flex items-center justify-center">
+                <span className="text-4xl">⬡</span>
+              </div>
+              <div>
+                <p className="text-lg font-medium text-zinc-200">
+                  Welcome to Bonzo Concierge
+                </p>
+                <p className="text-sm text-zinc-500 mt-1 max-w-md">
+                  Check balances, transfer HBAR, and deposit into vaults — all
+                  through natural language or voice.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2 justify-center">
+                {[
+                  "What's my HBAR balance?",
+                  "Send 1 HBAR to 0.0.1234",
+                  "What can you do?",
+                ].map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => setInput(s)}
+                    className="px-3 py-1.5 text-xs rounded-lg glass text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.06] transition-all cursor-pointer"
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {messages.map((msg) => (
+            <MessageBubble key={msg.id} message={msg} />
+          ))}
+
+          {isStreaming && (
+            <div className="flex items-center gap-2 text-xs text-zinc-500 pl-12">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
+              Thinking...
+            </div>
+          )}
+        </div>
+
+        {/* ── Input ── */}
+        <div className="px-6 pb-6 pt-2">
+          <form
+            onSubmit={handleSubmit}
+            className="input-bar relative flex items-center gap-2 p-1 rounded-2xl glass-strong"
           >
-            Send
-          </button>
-        </form>
-        <p className="text-[10px] text-gray-600 text-center mt-2">
-          Connected to Hedera Testnet · Transactions are real
-        </p>
-      </div>
-    </main>
+            {/* Mic button */}
+            <button
+              type="button"
+              onClick={startListening}
+              disabled={isStreaming || listening}
+              className={`ml-2 w-10 h-10 rounded-xl flex items-center justify-center transition-all cursor-pointer ${
+                listening
+                  ? "bg-red-500/20 border border-red-500/40 text-red-400 animate-pulse"
+                  : "bg-white/[0.04] border border-white/[0.08] text-zinc-400 hover:text-white hover:bg-white/[0.08]"
+              } disabled:opacity-30 disabled:cursor-not-allowed`}
+              title={listening ? "Listening..." : "Voice input"}
+            >
+              {listening ? (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <circle cx="12" cy="12" r="6" />
+                </svg>
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                  <line x1="12" x2="12" y1="19" y2="22" />
+                </svg>
+              )}
+            </button>
+
+            <input
+              ref={inputRef}
+              id="chat-input"
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder={listening ? "Listening..." : "Tell me what you'd like to do..."}
+              disabled={isStreaming}
+              className="flex-1 bg-transparent px-3 py-3 text-sm text-zinc-100 placeholder-zinc-600 outline-none disabled:opacity-50"
+            />
+            <button
+              type="submit"
+              disabled={isStreaming || !input.trim()}
+              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-violet-500 to-cyan-500 text-white text-sm font-medium hover:from-violet-400 hover:to-cyan-400 disabled:opacity-20 disabled:cursor-not-allowed transition-all shadow-lg shadow-violet-500/20 mr-1 cursor-pointer"
+            >
+              Send
+            </button>
+          </form>
+          <p className="text-[10px] text-zinc-600 text-center mt-2">
+            Connected to Hedera Testnet · Transactions are real
+          </p>
+        </div>
+      </main>
+    </>
   );
 }
 
 // ────────────────────────────────────────────────────────
-// Message Bubble Component
+// Message Bubble
 // ────────────────────────────────────────────────────────
 function MessageBubble({ message }: { message: UIMessage }) {
   const isUser = message.role === "user";
@@ -182,7 +279,7 @@ function MessageBubble({ message }: { message: UIMessage }) {
       }`}
     >
       {!isUser && (
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
           B
         </div>
       )}
@@ -192,27 +289,25 @@ function MessageBubble({ message }: { message: UIMessage }) {
           isUser ? "items-end" : "items-start"
         }`}
       >
-        {/* Text content */}
         {text && (
           <div
             className={`px-4 py-3 rounded-2xl text-sm leading-relaxed ${
               isUser
-                ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-br-md"
-                : "bg-[var(--surface)] border border-[var(--border)] text-gray-200 rounded-bl-md"
+                ? "bg-gradient-to-r from-violet-600/80 to-cyan-600/60 text-white rounded-br-md backdrop-blur-md border border-white/10"
+                : "glass rounded-bl-md text-zinc-200"
             }`}
           >
             {text}
           </div>
         )}
 
-        {/* Tool invocations */}
         {tools.map((toolPart, idx) => (
           <ToolCard key={idx} tool={toolPart.toolInvocation} />
         ))}
       </div>
 
       {isUser && (
-        <div className="w-8 h-8 rounded-lg bg-gray-700 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+        <div className="w-8 h-8 rounded-lg bg-white/[0.08] backdrop-blur-md border border-white/10 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5 text-zinc-300">
           U
         </div>
       )}
@@ -221,7 +316,7 @@ function MessageBubble({ message }: { message: UIMessage }) {
 }
 
 // ────────────────────────────────────────────────────────
-// Tool Card Component
+// Tool Card
 // ────────────────────────────────────────────────────────
 function ToolCard({
   tool,
@@ -239,7 +334,6 @@ function ToolCard({
   const errorMsg = output?.error as string | undefined;
   const balanceInHbar = output?.balanceInHbar as string | undefined;
 
-  // Pick label based on tool name
   const toolLabels: Record<string, { running: string; done: string }> = {
     check_balance: { running: "Checking Balance...", done: "Balance Retrieved" },
     transfer_hbar: { running: "Sending HBAR...", done: "Transfer Complete" },
@@ -249,22 +343,21 @@ function ToolCard({
 
   return (
     <div
-      className={`rounded-xl border p-4 text-sm space-y-3 ${
+      className={`rounded-xl p-4 text-sm space-y-3 backdrop-blur-md ${
         isRunning
-          ? "border-indigo-500/40 bg-indigo-500/5 animate-pulse-glow"
+          ? "bg-violet-500/[0.06] border border-violet-500/30 animate-pulse-glow"
           : isDone && success
-          ? "border-emerald-500/30 bg-emerald-500/5"
+          ? "bg-emerald-500/[0.06] border border-emerald-500/20"
           : isDone && !success
-          ? "border-red-500/30 bg-red-500/5"
-          : "border-[var(--border)] bg-[var(--surface)]"
+          ? "bg-red-500/[0.06] border border-red-500/20"
+          : "glass"
       }`}
     >
-      {/* Header */}
       <div className="flex items-center gap-2">
         {isRunning && (
           <>
-            <span className="inline-block w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />
-            <span className="text-indigo-300 font-medium">{labels.running}</span>
+            <span className="inline-block w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
+            <span className="text-violet-300 font-medium">{labels.running}</span>
           </>
         )}
         {isDone && success && (
@@ -281,15 +374,14 @@ function ToolCard({
         )}
       </div>
 
-      {/* Input parameters */}
       {Object.keys(inp).length > 0 && (
         <div className="grid grid-cols-2 gap-2 text-xs">
           {Object.entries(inp).map(([key, val]) => (
-            <div key={key} className="bg-black/20 rounded-lg px-3 py-2">
-              <span className="text-gray-500 block capitalize">
-                {key.replace(/([A-Z])/g, " $1").replace(/^./, s => s.toUpperCase())}
+            <div key={key} className="bg-white/[0.03] rounded-lg px-3 py-2 border border-white/[0.04]">
+              <span className="text-zinc-500 block capitalize">
+                {key.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase())}
               </span>
-              <span className="text-gray-200 font-mono text-[11px] break-all">
+              <span className="text-zinc-200 font-mono text-[11px] break-all">
                 {String(val)}{key.toLowerCase().includes("hbar") ? " HBAR" : ""}
               </span>
             </div>
@@ -297,25 +389,20 @@ function ToolCard({
         </div>
       )}
 
-      {/* Shimmer bar while loading */}
       {isRunning && <div className="h-1 rounded-full shimmer" />}
 
-      {/* Balance result */}
       {isDone && balanceInHbar && (
-        <div className="bg-black/20 rounded-lg px-3 py-2">
-          <span className="text-gray-500 text-xs block">Balance</span>
-          <span className="text-gray-200 font-mono text-lg">
-            {balanceInHbar}
-          </span>
+        <div className="bg-white/[0.03] rounded-lg px-3 py-2 border border-white/[0.04]">
+          <span className="text-zinc-500 text-xs block">Balance</span>
+          <span className="text-zinc-100 font-mono text-lg">{balanceInHbar}</span>
         </div>
       )}
 
-      {/* Transaction result */}
       {isDone && transactionId && (
-        <div className="bg-black/20 rounded-lg px-3 py-2 flex items-center justify-between gap-2">
+        <div className="bg-white/[0.03] rounded-lg px-3 py-2 border border-white/[0.04] flex items-center justify-between gap-2">
           <div>
-            <span className="text-gray-500 text-xs block">Transaction ID</span>
-            <span className="text-gray-300 font-mono text-xs break-all">
+            <span className="text-zinc-500 text-xs block">Transaction ID</span>
+            <span className="text-zinc-300 font-mono text-xs break-all">
               {transactionId}
             </span>
           </div>
@@ -323,16 +410,15 @@ function ToolCard({
             href={`https://hashscan.io/testnet/transaction/${transactionId}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-3 py-1.5 rounded-lg bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 text-xs hover:bg-indigo-500/30 transition-colors flex-shrink-0"
+            className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-violet-500/20 to-cyan-500/20 border border-white/10 text-cyan-300 text-xs hover:from-violet-500/30 hover:to-cyan-500/30 transition-colors flex-shrink-0"
           >
             HashScan ↗
           </a>
         </div>
       )}
 
-      {/* Error */}
       {isDone && errorMsg && (
-        <div className="bg-red-500/10 rounded-lg px-3 py-2 text-xs text-red-300">
+        <div className="bg-red-500/[0.06] rounded-lg px-3 py-2 text-xs text-red-300 border border-red-500/10">
           {errorMsg}
         </div>
       )}
