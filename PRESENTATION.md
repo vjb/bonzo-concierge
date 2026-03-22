@@ -90,20 +90,20 @@ Extract the exact text below to generate a **5-slide pitch deck** that follows t
 **[0:50 - 1:15] SLIDE 3 (Execution & Integration)**
 "We built a completely Agentic User Interface. It understands natural language, securely signs transactions in the background on Hedera, and integrates directly with Bonzo to find the best yields. I want to show you what this actually looks like. It is fast, and it is beautiful."
 
-**[1:15 - 1:45] 🟢 SWITCH TO LIVE SCREENCAST: The Web App**
+**[1:15 - 1:55] 🟢 SWITCH TO LIVE SCREENCAST: The Web App**
 *(Action: Open the app. Speak smoothly)*
-"Here is the Bonzo Concierge interface. It feels like a premium messaging app. Because the agent manages your treasury, you skip the wallet onboarding entirely. You simply log in and start talking to your money. Let's ask it for our balance."
-*(Action: Click the "What's my HBAR balance?" prompt button)*
-"Notice the transparent status trace. It provides total peace of mind by showing the user exactly what the AI is doing. The response is instantaneous and read aloud."
+"Here is the Bonzo Concierge interface. It is an agentic wallet. Notice your Treasury balance at the top. The user never downloads a browser extension; they simply log in and start talking to their money. Let's ask it for our balance."
+*(Action: Click the "What's my HBAR balance?" prompt button. **Pause your voiceover** to let the video capture the AI speaking the balance).*
+"That execution trace you see builds total user trust by showing exactly what the AI is querying in the background before it speaks."
 
-**[1:45 - 2:30] 🟢 LIVE SCREENCAST: Yield Oracle & Autonomous Decision-Making**
-"Now, let's look at the actual intelligent decision-making. I don't want to micromanage my treasury. I just want the best yield. I click my microphone and tell the assistant:"
-*(Action: Click the Microphone. Speak clearly: "I have 50 HBAR. I want low-risk yield. Scan Bonzo for the best APY right now and supply it there.")*
-"The concierge instantly pulls live market rates from the oracle. It sees USDC is outperforming HBAR, so it intelligently decides to allocate the equivalent value there. It builds the transaction, securely signs it on Hedera, and executes the supply on Bonzo."
+**[1:55 - 2:30] 🟢 LIVE SCREENCAST: Yield Oracle & Autonomous Decision-Making**
+"Now, let's look at the actual intelligent decision-making the Bonzo bounty asked for. I don't want to micromanage my treasury. I click my microphone and tell the assistant exactly what my intent is:"
+*(Action: Click the Microphone. Speak clearly into it: "I have 50 HBAR. I want low-risk yield. Scan Bonzo for the best APY right now and supply it there." **Pause your voiceover** to let the AI speak the summary while the grid renders).*
+"The concierge instantly pulled live market rates from our Bonzo Yield Oracle. It weighed the risk against the APY, autonomously made the financial decision that USDC was better, built the transaction payload, signed it, and executed it on Hedera."
 
 **[2:30 - 2:50] 🟢 LIVE SCREENCAST: HashScan Verification**
-*(Action: Wait for the chat to confirm the transaction. Click the HashScan link)*
-"And for complete transparency, every financial decision the Concierge makes generates a real, verifiable transaction on the Hedera network."
+*(Action: Wait for the chat to confirm the transaction. **Click the exact HashScan link** returned by the AI so the video records the new tab opening).*
+"And here is the absolute proof. Because Hedera has sub-second finality, this intent was settled as fast as a normal chat message. You can see right here on the ledger that the agent successfully moved the 50 HBAR on-chain to strictly execute the user's intent."
 
 **[2:50 - 3:15] SLIDE 4 (Success & Validation)**
 *(Action: Switch back to your slides)*
