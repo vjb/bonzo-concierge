@@ -92,9 +92,6 @@ The user's Hedera account is ${operatorAccountId}. Always be concise and profess
           try {
             // Artificial delay for Hackathon Live Demo so the "Tracing" UI is visible on camera
             await new Promise((resolve) => setTimeout(resolve, 1500));
-            // In a real production Bonzo deployment, this would query the Bonzo Pool Core Contract
-            // or use a specific subgraph. For the hackathon, we simulate fetching live floating APYs.
-            await new Promise((resolve) => setTimeout(resolve, 1500));
 
             const client = getHederaClient();
             
@@ -179,8 +176,8 @@ The user's Hedera account is ${operatorAccountId}. Always be concise and profess
         description: "Get the current supply and borrow APYs for assets on the Bonzo Finance protocol.",
         inputSchema: z.object({}),
         execute: async () => {
-          // Simulate fetching from Bonzo's subgraph/API
-          await new Promise(resolve => setTimeout(resolve, 800));
+          // Artificial delay for Hackathon Live Demo so the "Tracing" UI is visible on camera
+          await new Promise(resolve => setTimeout(resolve, 1500));
           return {
             success: true,
             message: "Successfully fetched Bonzo APYs.",
@@ -204,6 +201,9 @@ The user's Hedera account is ${operatorAccountId}. Always be concise and profess
         }),
         execute: async ({ amountInHbar }) => {
           try {
+            // Artificial delay for Hackathon Live Demo so the "Tracing" UI is visible on camera
+            await new Promise((resolve) => setTimeout(resolve, 1500));
+
             const client = getHederaClient();
             
             // For hackathon demo: Mock contract ID representing Bonzo pool
