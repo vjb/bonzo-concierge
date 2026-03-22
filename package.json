@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.47",
+    "@ai-sdk/react": "^3.0.136",
     "@hashgraph/sdk": "^2.81.0",
     "ai": "^6.0.134",
     "dotenv": "^17.3.1",
