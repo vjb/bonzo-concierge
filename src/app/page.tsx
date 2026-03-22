@@ -140,12 +140,31 @@ export default function ChatPage() {
   const [listening, setListening] = useState(false);
   const [voiceMode, setVoiceMode] = useState(false);
   const lastSpokenRef = useRef<string | null>(null);
+  const [balance, setBalance] = useState<string | null>(null);
+  const [balanceFlash, setBalanceFlash] = useState(false);
+
+  const fetchBalance = useCallback(async () => {
+    try {
+      const res = await fetch("/api/balance");
+      if (!res.ok) return;
+      const data = await res.json();
+      setBalance(data.balanceInHbar);
+      setBalanceFlash(true);
+      setTimeout(() => setBalanceFlash(false), 1000);
+    } catch { /* ignore */ }
+  }, []);
 
   useEffect(() => setMounted(true), []);
+  useEffect(() => { if (mounted) fetchBalance(); }, [mounted, fetchBalance]);
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
   useEffect(() => { inputRef.current?.focus(); }, []);
+
+  // Refresh balance whenever AI finishes responding
+  useEffect(() => {
+    if (status === "ready" && messages.length > 0) fetchBalance();
+  }, [status, messages.length, fetchBalance]);
 
   // Auto-TTS: speak last assistant message when streaming finishes (if mic was used)
   useEffect(() => {
@@ -205,6 +224,14 @@ export default function ChatPage() {
             Active · Hedera Testnet
           </div>
         </div>
+        {balance && (
+          <div className={`ml-auto text-right transition-all duration-300 ${balanceFlash ? "scale-105" : ""}`}>
+            <div className="text-[10px] text-gray-400 uppercase tracking-wider">Agent Treasury</div>
+            <div className={`text-sm font-semibold font-mono transition-colors duration-500 ${balanceFlash ? "text-blue-600" : "text-gray-800"}`}>
+              {balance}
+            </div>
+          </div>
+        )}
       </header>
 
       {/* Messages */}
