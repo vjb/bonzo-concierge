@@ -96,16 +96,14 @@ Extract the exact text below to generate a **5-slide pitch deck** that follows t
 *(Action: Click the "What's my HBAR balance?" prompt button)*
 "Notice the transparent status trace. It provides total peace of mind by showing the user exactly what the AI is doing. The response is instantaneous and read aloud."
 
-**[1:45 - 2:30] 🟢 LIVE SCREENCAST: Yield Oracle & Supply Transaction**
-"Now, let's explore our yield options."
-*(Action: Click the "What are the best yields on Bonzo?" button. Wait for the stylish UI to pop up and let the text-to-speech play)*
-"The concierge pulls live, competitive market rates. When I'm ready to invest, I don't need to click through four different approval screens. I just tell it what I want."
-*(Action: Click the Microphone. Speak clearly: "Supply 50 HBAR to Bonzo")*
-"Hedera's sub-second finality is what makes this entire product possible. It settles the transaction as fast as a normal chat message."
+**[1:45 - 2:30] 🟢 LIVE SCREENCAST: Yield Oracle & Autonomous Decision-Making**
+"Now, let's look at the actual intelligent decision-making. I don't want to micromanage my treasury. I just want the best yield. I click my microphone and tell the assistant:"
+*(Action: Click the Microphone. Speak clearly: "I have 50 HBAR. I want low-risk yield. Scan Bonzo for the best APY right now and supply it there.")*
+"The concierge instantly pulls live market rates from the oracle. It sees USDC is outperforming HBAR, so it intelligently decides to allocate the equivalent value there. It builds the transaction, securely signs it on Hedera, and executes the supply on Bonzo."
 
 **[2:30 - 2:50] 🟢 LIVE SCREENCAST: HashScan Verification**
-*(Action: Click the HashScan link)*
-"And for complete transparency, every action the Concierge takes generates a real, verifiable transaction on the Hedera network."
+*(Action: Wait for the chat to confirm the transaction. Click the HashScan link)*
+"And for complete transparency, every financial decision the Concierge makes generates a real, verifiable transaction on the Hedera network."
 
 **[2:50 - 3:15] SLIDE 4 (Success & Validation)**
 *(Action: Switch back to your slides)*
