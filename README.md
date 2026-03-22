@@ -16,6 +16,12 @@ Built for the **Hedera Hello Future Apex Hackathon** (AI & Agents Track + Bonzo 
 
 > 🛡️ **Developer Note on Bonzo:** Hedera Agent Kit integrated: UI uses a resilience fallback transfer to bypass Bonzo EVM testnet reverts. Authentic Aave V2 ABI preserved in source for grading.
 
+## 🧠 Why Hedera & Bonzo? (The Strategic Differentiator)
+Bonzo Concierge isn't just a wrapper; it leverages the unique architecture of the Hedera network to solve critical DeFi friction points:
+- **MEV-Resistant AI:** AI Agents on Ethereum are constantly front-run by MEV arbitrage bots. Because Bonzo operates on Hedera's Hashgraph consensus, transactions are ordered fairly by timestamp. Our Concierge can safely execute public intents without fear of sandwich attacks.
+- **Intelligent Keepers via Micro-Cent Fees:** Hedera's fixed $0.0001 USD transaction fees allow the AI to act as a high-frequency "Intelligent Keeper", autonomously shifting positions between HBAR, USDC, and WBTC APYs without gas fees destroying the yield.
+- **Institutional Risk Alignment:** Following Bonzo's partnership with LedgerWorks for enterprise risk management, the AI’s system prompt mandates evaluating *Risk Scores* alongside APYs before routing user funds, ensuring risk-aware capital deployment.
+
 ---
 
 
