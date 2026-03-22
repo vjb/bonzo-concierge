@@ -288,12 +288,24 @@ function MessageBubble({ message }: { message: UIMessage }) {
       )}
       <div className={`max-w-[80%] space-y-2 ${isUser ? "items-end" : "items-start"}`}>
         {text && (
-          <div className={`px-4 py-3 text-sm leading-relaxed ${
+          <div className={`relative group px-4 py-3 text-sm leading-relaxed ${
             isUser
               ? "bg-blue-600 text-white rounded-2xl rounded-br-lg shadow-md shadow-blue-600/10"
               : "bg-white text-gray-800 rounded-2xl rounded-bl-lg border border-gray-100 shadow-md shadow-gray-100/80"
           }`}>
             <FormattedText text={text} isUser={isUser} />
+            {!isUser && (
+              <button
+                onClick={() => speakText(text)}
+                className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-white border border-gray-200 shadow-sm flex items-center justify-center text-gray-400 hover:text-blue-600 hover:border-blue-200 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+                title="Play response"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                  <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                </svg>
+              </button>
+            )}
           </div>
         )}
         {tools.map((toolPart, idx) => (
