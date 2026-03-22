@@ -94,7 +94,7 @@ Extract the exact text below to generate a **5-slide pitch deck** that follows t
 *(Action: Open the app. Speak smoothly)*
 "Here is the Bonzo Concierge interface. It is an agentic wallet. Notice your Treasury balance at the top. The user never downloads a browser extension; they simply log in and start talking to their money. Let's ask it for our balance."
 *(Action: Click the "What's my HBAR balance?" prompt button. **Pause your voiceover** to let the video capture the AI speaking the balance).*
-"That execution trace you see builds total user trust by showing exactly what the AI is querying in the background before it speaks."
+"It feels like a live conversation with a private banker. Instant, transparent, and completely natural."
 
 **[1:55 - 2:30] 🟢 LIVE SCREENCAST: Yield Oracle & Autonomous Decision-Making**
 "Now, let's look at the actual intelligent decision-making the Bonzo bounty asked for. I don't want to micromanage my treasury. I click my microphone and tell the assistant exactly what my intent is:"
