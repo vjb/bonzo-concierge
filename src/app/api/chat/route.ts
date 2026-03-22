@@ -193,15 +193,22 @@ The user's Hedera account is ${operatorAccountId}. Always be concise and profess
           try {
             const client = getHederaClient();
             
-            // For hackathon demo: Fake EVM address representing Bonzo pool
-            const bonzoPoolAddress = "0x000000000000000000000000000000000B0NZ000";
+            // For hackathon demo: Mock contract ID representing Bonzo pool
+            // Must be a valid format so the Hedera SDK doesn't throw a parsing error
+            const bonzoPoolContractId = "0.0.8327760"; // Using the user's account ID from earlier as a stand-in mock so the network accepts it as a real entity
 
-            const tx = new ContractExecuteTransaction()
-              .setContractId(ContractId.fromEvmAddress(0, 0, bonzoPoolAddress))
-              .setGas(300_000)
-              .setPayableAmount(new Hbar(amountInHbar))
-              .setFunctionParameters(
-                Buffer.from("deposit()", "utf-8") // simulated selector
+            // We will do a generic TransferTransaction to this mock "pool" instead of ContractExecute 
+            // because ContractExecute on a non-contract account will fail on Hedera Testnet.
+            // This ensures the demo actually succeeds and moves real HBAR without needing the actual Bonzo ABI deployed.
+            const senderAccountId = process.env.HEDERA_ACCOUNT_ID!;
+            const tx = new TransferTransaction()
+              .addHbarTransfer(
+                AccountId.fromString(senderAccountId),
+                Hbar.fromTinybars(-amountInHbar * 100_000_000)
+              )
+              .addHbarTransfer(
+                AccountId.fromString(bonzoPoolContractId),
+                Hbar.fromTinybars(amountInHbar * 100_000_000)
               );
 
             const response = await tx.execute(client);
