@@ -115,8 +115,13 @@ function FormattedText({ text, isUser }: { text: string; isUser: boolean }) {
 // ── TTS (ElevenLabs with Native Fallback) ──
 async function speakText(text: string) {
   try {
-    // Strip markdown for cleaner speech
-    const clean = text.replace(/\*\*(.+?)\*\*/g, "$1").replace(/`([^`]+)`/g, "$1");
+    // Strip markdown and clean text for natural speech pronunciation
+    const clean = text
+      .replace(/\*\*(.+?)\*\*/g, "$1")
+      .replace(/`([^`]+)`/g, "$1")
+      .replace(/\bHBAR\b/gi, "H-bar")
+      // Specifically scrub massive Hedera Transaction Hash strings so TTS doesn't robotically read 40 digits out loud
+      .replace(/Transaction ID:?\s*(\d+\.\d+\.\d+@\d+\.\d+)\.?/i, "A verification link is provided below.");
     const res = await fetch("/api/tts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
