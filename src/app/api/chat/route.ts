@@ -277,10 +277,7 @@ The user's Hedera account is ${operatorAccountId}. Always be concise and profess
               }
             } as any);
 
-            const depositTool = toolkit.getTools().find(t => t.name === "bonzo_deposit_tool");
-            if (!depositTool) {
-               throw new Error("CRITICAL: Bonzo Deposit LangChain tool could not be injected from the plugin registry.");
-            }
+
 
             // A Note on Bonzo Contract Execution:
             // Our architecture natively supports full EVM ABI execution via the Hedera Agent Kit.
