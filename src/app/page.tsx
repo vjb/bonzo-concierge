@@ -316,7 +316,7 @@ function MessageBubble({ message }: { message: UIMessage }) {
 }
 
 // ────────────────────────────────────────────────────────
-// Tool Card
+// Execution Trace (terminal-style tool card)
 // ────────────────────────────────────────────────────────
 function ToolCard({
   tool,
@@ -333,95 +333,138 @@ function ToolCard({
   const transactionId = output?.transactionId as string | undefined;
   const errorMsg = output?.error as string | undefined;
   const balanceInHbar = output?.balanceInHbar as string | undefined;
+  const statusText = output?.status as string | undefined;
+  const outputMessage = output?.message as string | undefined;
 
-  const toolLabels: Record<string, { running: string; done: string }> = {
-    check_balance: { running: "Checking Balance...", done: "Balance Retrieved" },
-    transfer_hbar: { running: "Sending HBAR...", done: "Transfer Complete" },
-    deposit_to_vault: { running: "Processing Deposit...", done: "Deposit Complete" },
-  };
-  const labels = toolLabels[tool.toolName] ?? { running: "Processing...", done: "Complete" };
+  const statusIcon = isRunning
+    ? "⟳"
+    : isDone && success
+    ? "✓"
+    : isDone && !success
+    ? "✗"
+    : "·";
+
+  const statusColor = isRunning
+    ? "text-violet-400"
+    : isDone && success
+    ? "text-emerald-400"
+    : "text-red-400";
+
+  const borderColor = isRunning
+    ? "border-violet-500/25"
+    : isDone && success
+    ? "border-emerald-500/15"
+    : isDone && !success
+    ? "border-red-500/15"
+    : "border-white/[0.06]";
 
   return (
     <div
-      className={`rounded-xl p-4 text-sm space-y-3 backdrop-blur-md ${
-        isRunning
-          ? "bg-violet-500/[0.06] border border-violet-500/30 animate-pulse-glow"
-          : isDone && success
-          ? "bg-emerald-500/[0.06] border border-emerald-500/20"
-          : isDone && !success
-          ? "bg-red-500/[0.06] border border-red-500/20"
-          : "glass"
+      className={`rounded-xl overflow-hidden border backdrop-blur-md font-mono text-xs ${borderColor} ${
+        isRunning ? "animate-pulse-glow" : ""
       }`}
     >
-      <div className="flex items-center gap-2">
+      {/* Terminal header bar */}
+      <div className="flex items-center gap-2 px-4 py-2 bg-white/[0.03] border-b border-white/[0.04]">
+        <div className="flex gap-1.5">
+          <span className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
+          <span className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
+          <span className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
+        </div>
+        <span className="text-zinc-500 text-[10px] ml-1">execution trace</span>
+      </div>
+
+      {/* Terminal body */}
+      <div className="px-4 py-3 space-y-1.5 bg-black/30">
+        {/* Main status line */}
+        <div className="flex items-center gap-2">
+          <span className={`${statusColor} ${isRunning ? "animate-spin inline-block" : ""}`}>
+            {statusIcon}
+          </span>
+          <span className={statusColor}>
+            {isRunning
+              ? `Executing ${tool.toolName}...`
+              : isDone && success
+              ? tool.toolName
+              : `${tool.toolName} failed`}
+          </span>
+        </div>
+
+        {/* Input params */}
+        {Object.entries(inp).map(([key, val]) => (
+          <div key={key} className="text-zinc-500 pl-5">
+            <span className="text-zinc-600">├─</span>{" "}
+            <span className="text-zinc-400">{key}</span>
+            <span className="text-zinc-600">:</span>{" "}
+            <span className="text-cyan-300/80">
+              {String(val)}{key.toLowerCase().includes("hbar") ? " ℏ" : ""}
+            </span>
+          </div>
+        ))}
+
+        {/* Shimmer while running */}
         {isRunning && (
-          <>
-            <span className="inline-block w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
-            <span className="text-violet-300 font-medium">{labels.running}</span>
-          </>
+          <div className="ml-5 mt-1">
+            <div className="h-0.5 w-32 rounded-full shimmer" />
+          </div>
         )}
+
+        {/* Results */}
         {isDone && success && (
           <>
-            <span className="text-emerald-400">✓</span>
-            <span className="text-emerald-300 font-medium">{labels.done}</span>
+            <div className="text-zinc-600 pl-5 pt-1 border-t border-white/[0.03] mt-1">
+              └─ result
+            </div>
+
+            {balanceInHbar && (
+              <div className="pl-8 text-emerald-300">
+                balance: {balanceInHbar}
+              </div>
+            )}
+
+            {transactionId && (
+              <div className="pl-8 flex items-center gap-2 flex-wrap">
+                <span className="text-emerald-300 break-all">
+                  tx: {transactionId}
+                </span>
+                <a
+                  href={`https://hashscan.io/testnet/transaction/${transactionId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-cyan-400 hover:text-cyan-300 transition-colors underline underline-offset-2"
+                >
+                  view on HashScan ↗
+                </a>
+              </div>
+            )}
+
+            {statusText && (
+              <div className="pl-8 text-emerald-300/70">
+                status: {statusText}
+              </div>
+            )}
+
+            {outputMessage && (
+              <div className="pl-8 text-zinc-400">
+                {outputMessage}
+              </div>
+            )}
           </>
         )}
-        {isDone && !success && (
+
+        {/* Error output */}
+        {isDone && errorMsg && (
           <>
-            <span className="text-red-400">✗</span>
-            <span className="text-red-300 font-medium">Failed</span>
+            <div className="text-zinc-600 pl-5 pt-1 border-t border-white/[0.03] mt-1">
+              └─ error
+            </div>
+            <div className="pl-8 text-red-400">
+              {errorMsg}
+            </div>
           </>
         )}
       </div>
-
-      {Object.keys(inp).length > 0 && (
-        <div className="grid grid-cols-2 gap-2 text-xs">
-          {Object.entries(inp).map(([key, val]) => (
-            <div key={key} className="bg-white/[0.03] rounded-lg px-3 py-2 border border-white/[0.04]">
-              <span className="text-zinc-500 block capitalize">
-                {key.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase())}
-              </span>
-              <span className="text-zinc-200 font-mono text-[11px] break-all">
-                {String(val)}{key.toLowerCase().includes("hbar") ? " HBAR" : ""}
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {isRunning && <div className="h-1 rounded-full shimmer" />}
-
-      {isDone && balanceInHbar && (
-        <div className="bg-white/[0.03] rounded-lg px-3 py-2 border border-white/[0.04]">
-          <span className="text-zinc-500 text-xs block">Balance</span>
-          <span className="text-zinc-100 font-mono text-lg">{balanceInHbar}</span>
-        </div>
-      )}
-
-      {isDone && transactionId && (
-        <div className="bg-white/[0.03] rounded-lg px-3 py-2 border border-white/[0.04] flex items-center justify-between gap-2">
-          <div>
-            <span className="text-zinc-500 text-xs block">Transaction ID</span>
-            <span className="text-zinc-300 font-mono text-xs break-all">
-              {transactionId}
-            </span>
-          </div>
-          <a
-            href={`https://hashscan.io/testnet/transaction/${transactionId}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-violet-500/20 to-cyan-500/20 border border-white/10 text-cyan-300 text-xs hover:from-violet-500/30 hover:to-cyan-500/30 transition-colors flex-shrink-0"
-          >
-            HashScan ↗
-          </a>
-        </div>
-      )}
-
-      {isDone && errorMsg && (
-        <div className="bg-red-500/[0.06] rounded-lg px-3 py-2 text-xs text-red-300 border border-red-500/10">
-          {errorMsg}
-        </div>
-      )}
     </div>
   );
 }
+
