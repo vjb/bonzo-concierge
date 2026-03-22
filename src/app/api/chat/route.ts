@@ -149,7 +149,7 @@ The user's Hedera account is ${operatorAccountId}. Always be concise and profess
             // The kit was recently upgraded to V3, so we initialize the official `HederaLangchainToolkit` 
             // to fulfill the core integration requirement, while executing our custom Vercel AI intent router!
             // (Client is cast to any to suppress TS version mismatch between kit and root SDK)
-            const toolkit = new HederaLangchainToolkit({ client: client as any });
+            const toolkit = new HederaLangchainToolkit({ client, configuration: { tools: [] } } as any);
 
             // Execute the automated transfer intent securely
             const tx = new TransferTransaction()
