@@ -95,11 +95,15 @@ The user's Hedera account is ${operatorAccountId}. Always be concise and profess
               .setAccountId(AccountId.fromString(accountId))
               .execute(client);
 
+            // Format to 1 decimal place (tenths) for a natural TTS voice readout
+            const hbarValue = balance.hbars.toBigNumber().toNumber();
+            const friendlyBalance = hbarValue.toFixed(1);
+
             return {
               success: true,
               accountId,
-              balanceInHbar: balance.hbars.toString(),
-              message: `Account ${accountId} has ${balance.hbars.toString()}`,
+              balanceInHbar: friendlyBalance,
+              message: `Account ${accountId} has ${friendlyBalance} HBAR`,
             };
           } catch (error: unknown) {
             const msg =
