@@ -281,7 +281,7 @@ export default function ChatPage() {
       <div className="px-6 pb-6 pt-3 bg-white">
         {/* Suggested Prompts Array */}
         <div className="flex gap-2 mb-4 overflow-x-auto hide-scrollbar whitespace-nowrap -mx-6 px-6">
-          {["What's my HBAR balance?", "What are the best yields on Bonzo?", "Pin 0000: Supply 5 HBAR to Bonzo", "Pin 0000: Send 1 HBAR to 0.0.1234"].map((s) => (
+          {["What's my HBAR balance?", "What are the best yields on Bonzo?", "Pin 1113: Supply 5 HBAR to Bonzo", "Pin 1113: Send 1 HBAR to 0.0.1234"].map((s) => (
             <button
               key={s}
               type="button"

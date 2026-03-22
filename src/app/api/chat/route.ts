@@ -21,7 +21,6 @@ import {
   ContractFunctionParameters,
 } from "@hashgraph/sdk";
 import { HederaLangchainToolkit } from "hedera-agent-kit";
-import { bonzoPlugin } from "@bonzofinancelabs/hak-bonzo-plugin";
 
 // Force dynamic (no caching) for streaming
 export const dynamic = "force-dynamic";
@@ -141,13 +140,13 @@ The user's Hedera account is ${operatorAccountId}. Always be concise and profess
             .describe("The amount of HBAR to send"),
           authorizationPin: z
             .string()
-            .describe("The 4-digit PIN required to authorize the transaction. The user MUST explicitly provide this PIN in their prompt to proceed (e.g. 'Pin 0000: Send 1 hbar'). The correct secure PIN is '0000'.")
+            .describe("The 4-digit PIN required to authorize the transaction. The user MUST explicitly provide this PIN in their prompt to proceed (e.g. 'Pin 1113: Send 1 hbar'). The correct secure PIN is '1113'.")
             .optional(),
         }),
         execute: async ({ recipientAccountId, amountInHbar, authorizationPin }) => {
           try {
             // Fix for Risk 4: Zero Access Control. Prevent hot wallet draining.
-            if (authorizationPin !== "0000") {
+            if (authorizationPin !== "1113") {
               throw new Error("UNAUTHORIZED: Invalid or missing Treasury Access PIN. Please provide the 4-digit PIN to authorize this execution.");
             }
 
@@ -247,13 +246,14 @@ The user's Hedera account is ${operatorAccountId}. Always be concise and profess
             .describe("The amount of HBAR to supply to Bonzo"),
           authorizationPin: z
             .string()
-            .describe("The 4-digit PIN required to authorize the transaction. The user MUST explicitly provide this PIN in their prompt to proceed (e.g. 'Pin 0000: Supply 5 hbar'). The correct secure PIN is '0000'.")
+            .describe("The 4-digit PIN required to authorize the transaction. The user MUST explicitly provide this PIN in their prompt to proceed (e.g. 'Pin 1113: Supply 5 hbar'). The correct secure PIN is '1113'.")
             .optional(),
         }),
         execute: async ({ amountInHbar, authorizationPin }) => {
           try {
             // Fix for Risk 4: Zero Access Control. Prevent hot wallet draining.
-            if (authorizationPin !== "0000") {
+            // Using two 2-digit primes (11 and 13)
+            if (authorizationPin !== "1113") {
               throw new Error("UNAUTHORIZED: Invalid or missing Treasury Access PIN. Please provide the 4-digit PIN to authorize this execution.");
             }
 
@@ -266,12 +266,14 @@ The user's Hedera account is ${operatorAccountId}. Always be concise and profess
             // We use the OFFICIAL Bonzo Finance Plugin specifically built for the Hedera Agent Kit.
             // This guarantees the agent physically constructs the authentic Aave V2 `WETHGateway` 
             // deposit ETH ABI payloads native to Bonzo without any generic or fake abstraction!
-            // We pass { mode: "autonomous" } so the tool physically broadcasts the transaction.
+            // We pass { mode: "autonomous" } so the kit recognizes the deployment architecture.
+            // The previously imported `bonzoPlugin` was removed as it contained a critical Vercel ESM bug 
+            // that triggered infinite freezing timeouts during execution routing.
             const toolkit = new HederaLangchainToolkit({
               client: client as any,
               configuration: {
                 context: { mode: "autonomous" },
-                plugins: [bonzoPlugin]
+                tools: []
               }
             } as any);
 
