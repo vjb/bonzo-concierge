@@ -1,35 +1,50 @@
 # Bonzo Concierge
 
-An AI-powered DeFi assistant that lets users deposit HBAR into Bonzo vault contracts on Hedera through natural language. Built with Next.js, the Vercel AI SDK, and the Hedera SDK.
+An AI-powered DeFi assistant that lets users interact with the Hedera network through natural language and voice. Built for the Bonzo Finance hackathon.
 
-## How It Works
+## What It Does
 
-The user types a plain-English instruction like *"Deposit 15 HBAR to 0xABC..."*. An LLM (GPT-4o-mini) parses the intent, extracts the parameters, and executes the corresponding `ContractExecuteTransaction` on Hedera Testnet. The result — including the on-chain transaction ID and a link to HashScan — is streamed back into the chat interface in real time.
+Users type or speak commands like "What's my HBAR balance?" or "Send 5 HBAR to 0.0.1234" and the AI agent executes real on-chain transactions on Hedera Testnet. Every transaction is verifiable on [HashScan](https://hashscan.io/testnet).
 
-```
-User prompt  →  LLM intent parsing  →  Hedera ContractExecuteTransaction  →  Streamed response
-```
+### Capabilities
+
+| Tool | Description |
+|------|-------------|
+| `check_balance` | Query the HBAR balance of any Hedera account |
+| `transfer_hbar` | Send HBAR to any account via `TransferTransaction` |
+| `deposit_to_vault` | Deposit HBAR into a Bonzo vault smart contract |
+
+### Voice Interaction
+
+Click the microphone button to speak commands. The app uses the browser's Web Speech API for speech-to-text and ElevenLabs for text-to-speech, creating a full voice conversation loop with the blockchain.
 
 ## Architecture
 
-| Layer | Technology | Role |
-|-------|-----------|------|
-| Frontend | Next.js 16, React, Tailwind CSS | Dark-themed chat interface |
-| AI | Vercel AI SDK v6, GPT-4o-mini | Intent parsing and tool orchestration |
-| Blockchain | Hedera SDK (`@hashgraph/sdk`) | On-chain transaction execution |
-| Streaming | Server-Sent Events | Real-time response delivery |
+```
+User (voice/text)
+  │
+  ├─► Next.js Frontend (React, Vercel AI SDK v6)
+  │     └─ useChat hook → streams messages
+  │
+  ├─► /api/chat (POST)
+  │     ├─ streamText + GPT-4o-mini
+  │     ├─ Tool: check_balance → AccountBalanceQuery
+  │     ├─ Tool: transfer_hbar → TransferTransaction
+  │     └─ Tool: deposit_to_vault → ContractExecuteTransaction
+  │
+  └─► /api/tts (POST)
+        └─ ElevenLabs text-to-speech proxy
+```
 
-The API route (`/api/chat`) defines an `execute_deposit` tool using AI SDK's structured tool system. When the LLM decides a deposit is needed, it invokes the tool with validated parameters (`amountInHbar`, `vaultAddress`). The tool constructs and submits a `ContractExecuteTransaction` to Hedera, then returns the transaction ID to the model for a natural-language summary.
+## Tech Stack
+
+- **Frontend**: Next.js 15, React 19, Vercel AI SDK v6, Tailwind CSS v4
+- **AI**: OpenAI GPT-4o-mini with function calling
+- **Blockchain**: Hedera SDK (`@hashgraph/sdk`)
+- **Voice**: Web Speech API (STT), ElevenLabs (TTS)
+- **Language**: TypeScript
 
 ## Setup
-
-### Prerequisites
-
-- Node.js 20+
-- An [OpenAI API key](https://platform.openai.com/api-keys)
-- A [Hedera Testnet account](https://portal.hedera.com/) (free)
-
-### Install and run
 
 ```bash
 git clone https://github.com/vjb/bonzo-concierge.git
@@ -37,16 +52,17 @@ cd bonzo-concierge
 npm install
 ```
 
-Create a `.env` file in the project root:
+Create a `.env` file:
 
 ```env
 OPENAI_API_KEY=sk-...
-HEDERA_ACCOUNT_ID=0.0.XXXXXXX
-HEDERA_PRIVATE_KEY=302e...          # ECDSA hex private key
+HEDERA_ACCOUNT_ID=0.0.XXXXXX
+HEDERA_PRIVATE_KEY=302e...
 HEDERA_NETWORK=testnet
+ELEVEN_LABS_KEY=sk_...
 ```
 
-Start the dev server:
+Run the dev server:
 
 ```bash
 npm run dev
@@ -54,45 +70,29 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+## Demo Flow
+
+1. Open the app and click "What's my HBAR balance?"
+2. The agent calls `check_balance` and displays the result with a transparent execution trace
+3. Say or type "Send 1 HBAR to 0.0.8327760"
+4. The agent executes a real `TransferTransaction` on Hedera Testnet
+5. Click the HashScan link to verify the on-chain transaction
+
 ## Project Structure
 
 ```
 src/
-  app/
-    api/chat/route.ts   # Streaming chat endpoint with execute_deposit tool
-    page.tsx             # Chat UI (useChat + tool invocation cards)
-    layout.tsx           # Root layout, Inter font, dark mode
-    globals.css          # Design tokens, animations
+├── app/
+│   ├── api/
+│   │   ├── chat/route.ts    # AI agent with Hedera tools
+│   │   └── tts/route.ts     # ElevenLabs TTS proxy
+│   ├── globals.css           # Design system
+│   ├── layout.tsx            # Root layout with Inter font
+│   └── page.tsx              # Chat UI with voice + execution trace
 scripts/
-  test_hedera_connection.ts  # Validates Hedera SDK auth
-  test_ai_tool.ts            # Validates LLM intent parsing
-  test_api_route.ts          # Validates /api/chat streaming
+├── test_api_route.ts         # API integration test
+└── test_hbar_transfer.ts     # Live transfer test
 ```
-
-## Key Features
-
-- **Natural language transactions** — users describe what they want; the AI determines and executes the right on-chain action.
-- **Streaming responses** — Server-Sent Events deliver token-by-token output so the interface feels responsive.
-- **Tool invocation UI** — dedicated card components show transaction status (processing, success, failure) with input parameters and HashScan links.
-- **Error handling** — failed transactions return structured error messages instead of crashing the conversation.
-
-## Testing
-
-Each phase was developed test-first. The scripts in `scripts/` can be re-run to validate each layer independently:
-
-```bash
-npx tsx scripts/test_hedera_connection.ts   # Phase 2: SDK auth
-npx tsx scripts/test_ai_tool.ts             # Phase 3: LLM tool calling
-npx tsx scripts/test_api_route.ts           # Phase 4: API route (requires dev server)
-```
-
-## Built With
-
-- [Next.js](https://nextjs.org/) — React framework
-- [Vercel AI SDK](https://ai-sdk.dev/) — LLM integration and streaming
-- [Hedera SDK](https://github.com/hashgraph/hedera-sdk-js) — Blockchain transactions
-- [OpenAI](https://openai.com/) — GPT-4o-mini for intent parsing
-- [Tailwind CSS](https://tailwindcss.com/) — Styling
 
 ## License
 
