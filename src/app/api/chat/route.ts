@@ -90,7 +90,14 @@ The user's Hedera account is ${operatorAccountId}. Always be concise and profess
         }),
         execute: async ({ accountId }) => {
           try {
+            // Artificial delay for Hackathon Live Demo so the "Tracing" UI is visible on camera
+            await new Promise((resolve) => setTimeout(resolve, 1500));
+            // In a real production Bonzo deployment, this would query the Bonzo Pool Core Contract
+            // or use a specific subgraph. For the hackathon, we simulate fetching live floating APYs.
+            await new Promise((resolve) => setTimeout(resolve, 1500));
+
             const client = getHederaClient();
+            
             const balance = await new AccountBalanceQuery()
               .setAccountId(AccountId.fromString(accountId))
               .execute(client);
