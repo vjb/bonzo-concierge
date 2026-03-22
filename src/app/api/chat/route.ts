@@ -201,7 +201,7 @@ The user's Hedera account is ${operatorAccountId}. Always be concise and profess
             
             // For hackathon demo: Mock contract ID representing Bonzo pool
             // Must be a valid different format so the Hedera SDK sees a real transfer of HBAR
-            const bonzoPoolContractId = "0.0.5186834"; // A distinct, real testnet account
+            const bonzoPoolContractId = "0.0.1001"; // A guaranteed, perpetually funded Hedera testnet network account
 
             // We will do a generic TransferTransaction to this mock "pool" instead of ContractExecute 
             // because ContractExecute on a non-contract account will fail on Hedera Testnet.
