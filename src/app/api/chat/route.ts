@@ -184,9 +184,11 @@ The user's Hedera account is ${operatorAccountId}. Always be concise and profess
             success: true,
             message: "Successfully fetched Bonzo APYs.",
             rates: {
-              HBAR: { supplyApy: "8.5%", borrowApy: "11.2%", riskScore: "Low (Native Asset)" },
-              USDC: { supplyApy: "6.2%", borrowApy: "8.5%", riskScore: "Low (Stablecoin)" },
-              WBTC: { supplyApy: "2.1%", borrowApy: "4.8%", riskScore: "Medium (Bridged Asset)" }
+              reserves: [
+                { symbol: "HBAR", supply_apy: "8.5", variable_borrow_apy: "11.2", risk_score: "Low (Native Asset)" },
+                { symbol: "USDC", supply_apy: "6.2", variable_borrow_apy: "8.5", risk_score: "Low (Stablecoin)" },
+                { symbol: "WBTC", supply_apy: "2.1", variable_borrow_apy: "4.8", risk_score: "Medium (Bridged Asset)" }
+              ]
             }
           };
         }
