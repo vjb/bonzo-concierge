@@ -1,0 +1,22 @@
+# Environment variables / secrets
+.env
+.env.*
+!.env.example
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Build output
+dist/
+build/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
