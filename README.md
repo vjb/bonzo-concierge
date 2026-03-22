@@ -4,9 +4,9 @@
 
 Built for the **Hedera Hello Future Apex Hackathon** (AI & Agents Track + Bonzo Intent-Based UI Bounty).
 
-> *Please see `PRESENTATION.md` for the full pitch, business model, and hackathon judging criteria breakdown.*
+> **👉 [Watch the 3.5-Minute Live Demo on YouTube](https://www.youtube.com/watch?v=EfWChKsFjTI)**
+> **👉 [View the Bonzo Concierge Pitch Deck (PDF)](Bonzo_Concierge_AI.pdf)**
 
----
 
 ## 🚀 Features
 
@@ -71,17 +71,6 @@ npm run dev
 ```
 
 Navigate to [http://localhost:3000](http://localhost:3000) to start talking to the blockchain.
-
----
-
-## 🎥 Hackathon Demo Script Flow
-
-1. **Verify Balance:** Click the suggested prompt *"What's my HBAR balance?"*. The execution trace will ping the Hedera testnet and return the operator's current balance.
-2. **Oracle Query Check:** Ask *"What are the best yields on Bonzo?"*. Watch the Agent render a specialized UI grid of the APYs, and listen to the ElevenLabs TTS response.
-3. **Intent Execution:** Click the mic and say, *"Supply 50 HBAR to Bonzo."*
-4. **On-Chain Settlement:** The agent will execute the on-chain standard transfer simulating the Bonzo supply pool. Click the returned **View on HashScan** link to prove the execution to the judges.
-
----
 
 ## License
 MIT
