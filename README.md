@@ -56,8 +56,14 @@ OPENAI_API_KEY=sk-...
 ELEVEN_LABS_KEY=sk_... # (Optional) Falls back to browser native TTS if omitted
 
 # Hedera Agent Treasury (Testnet)
-HEDERA_ACCOUNT_ID=0.0.XXXXXX
+HEDERA_ACCOUNT_ID=0.0.XXXXXX # The bot's sovereign account
 HEDERA_PRIVATE_KEY=302e...
+
+---
+
+## 🔗 Hackathon Verification (On-Chain Proof)
+**Hedera Testnet Account ID of the Team:** `0.0.5186835`
+*(This is the Agent Treasury account used in the demo video to execute the Bonzo Protocol supply intent via HSCS/TransferTransaction).*
 HEDERA_NETWORK=testnet
 ```
 
