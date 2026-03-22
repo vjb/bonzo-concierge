@@ -30,11 +30,12 @@ function getToolParts(msg: UIMessage): ToolInvocationPart[] {
 
 // ── Inline formatter (bold, code, tx links) ──
 function formatInline(line: string, isUser: boolean): React.ReactNode[] {
-  // Use rare ASCII sequences as delimiters to avoid regex issues
+  // Process tx IDs FIRST (before bold) to avoid nesting collisions
+  // when the AI wraps a tx ID in **bold**
   const tagged = line
+    .replace(/(\d+\.\d+\.\d+@\d+\.\d+)/g, "<<T>>$1<</T>>")
     .replace(/\*\*(.+?)\*\*/g, "<<B>>$1<</B>>")
-    .replace(/`([^`]+)`/g, "<<C>>$1<</C>>")
-    .replace(/(\d+\.\d+\.\d+@\d+\.\d+)/g, "<<T>>$1<</T>>");
+    .replace(/`([^`]+)`/g, "<<C>>$1<</C>>");
 
   const tagRe = /<<(B|C|T)>>(.+?)<<\/(B|C|T)>>/g;
   const nodes: React.ReactNode[] = [];
