@@ -260,17 +260,9 @@ export default function ChatPage() {
             </div>
             <div>
               <p className="text-lg font-semibold text-gray-800">Welcome to Bonzo Concierge</p>
-              <p className="text-sm text-gray-500 mt-1 max-w-sm">
+              <p className="text-sm text-gray-500 mt-1 max-w-sm mx-auto">
                 Check balances, transfer HBAR, and interact with Hedera DeFi through natural language or voice.
               </p>
-            </div>
-            <div className="flex flex-wrap gap-2 justify-center">
-              {["What are the best yields on Bonzo?", "Supply 50 HBAR to Bonzo", "What's my HBAR balance?"].map((s) => (
-                <button key={s} onClick={() => setInput(s)}
-                  className="px-4 py-2 text-sm rounded-full border border-gray-200 text-gray-600 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50/50 transition-all cursor-pointer">
-                  {s}
-                </button>
-              ))}
             </div>
           </div>
         )}
@@ -287,6 +279,23 @@ export default function ChatPage() {
 
       {/* Input */}
       <div className="px-6 pb-6 pt-3 bg-white">
+        {/* Suggested Prompts Array */}
+        <div className="flex gap-2 mb-4 overflow-x-auto hide-scrollbar whitespace-nowrap -mx-6 px-6">
+          {["What's my HBAR balance?", "What are the best yields on Bonzo?", "Supply 5 HBAR to Bonzo", "Send 1 HBAR to 0.0.1234"].map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => {
+                setInput("");
+                sendMessage({ text: s });
+              }}
+              className="px-3 py-1.5 text-[13px] rounded-full border border-gray-200 text-gray-600 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50/50 transition-colors whitespace-nowrap cursor-pointer shrink-0"
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+
         <form onSubmit={handleSubmit}
           className="relative flex items-center gap-2 px-2 py-1.5 rounded-full border border-gray-200 bg-white shadow-2xl shadow-gray-200/60 focus-within:border-blue-300 focus-within:shadow-blue-100/40 transition-all">
           {/* Mic */}
