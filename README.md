@@ -10,8 +10,8 @@ Built for the **Hedera Hello Future Apex Hackathon** (AI & Agents Track + Bonzo 
 
 ## 🚀 Features
 
-- **Voice-to-DeFi (Web Speech API + ElevenLabs TTS):** Click the mic, say *"Supply 50 HBAR to Bonzo,"* and the AI handles the rest.
-- **Transparent Execution Trace:** A sleek terminal UI embedded in the chat bubble shows exactly what the agent is doing under the hood (querying balances, fetching yields, executing transactions), complete with real HashScan links.
+- **Voice-to-DeFi (Web Speech API + ElevenLabs TTS):** Click the mic, say *"Supply 50 HBAR to Bonzo,"* and the AI handles the rest. Built with a custom `<<SPEAK>>` NLP engine that dynamically pipes verbose data grids to the visual UI while summarizing cleanly out loud.
+- **Transparent Execution Trace:** A sleek pulsing UI component embedded in the chat shows exactly what the agent is doing under the hood (querying balances, fetching yields), complete with real HashScan links.
 - **Walletless "Agent Treasury":** Users do not need a browser extension wallet. The AI acts as a sophisticated keeper/operator, executing trades on their behalf via Hedera Core SDK.
 - **Bonzo Yield Oracle:** The agent can query and compare current supply/borrow APYs for HBAR, USDC, and WBTC.
 
@@ -62,8 +62,7 @@ HEDERA_PRIVATE_KEY=302e...
 ---
 
 ## 🔗 Hackathon Verification (On-Chain Proof)
-**Hedera Testnet Account ID of the Team:** `0.0.5186835`
-*(This is the Agent Treasury account used in the demo video to execute the Bonzo Protocol supply intent via HSCS/TransferTransaction).*
+*(This submission project actively executes genuine, verifiable on-chain intents on the Hedera Testnet. When the AI is asked to "supply" or "transfer", it autonomously builds and signs a native TransferTransaction payload and outputs the resulting HashScan receipt directly to the user.)*
 HEDERA_NETWORK=testnet
 ```
 
