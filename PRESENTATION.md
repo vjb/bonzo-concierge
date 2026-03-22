@@ -34,7 +34,7 @@ Extract the exact text below to generate a **5-slide pitch deck** that follows t
 
 **Bullet Points:**
 *   **The Problem:** Decentralized finance feels like a foreign language. Users have to download extensions, manage private keys, and calculate gas fees just to save money.
-*   **The Solution:** A sleek, friendly chat interface. Just say, *"Deposit 50 HBAR to my savings,"* and we handle the rest.
+*   **The Solution:** A sleek, friendly chat interface. Just say, *"I want low risk yield on my HBAR,"* and we handle the rest.
 *   **The Innovation:** We replaced complex Web3 interfaces with an intelligent agent, making high-yield finance accessible to everyone.
 
 ---
