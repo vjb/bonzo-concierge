@@ -1,36 +1,99 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Bonzo Concierge
 
-## Getting Started
+An AI-powered DeFi assistant that lets users deposit HBAR into Bonzo vault contracts on Hedera through natural language. Built with Next.js, the Vercel AI SDK, and the Hedera SDK.
 
-First, run the development server:
+## How It Works
+
+The user types a plain-English instruction like *"Deposit 15 HBAR to 0xABC..."*. An LLM (GPT-4o-mini) parses the intent, extracts the parameters, and executes the corresponding `ContractExecuteTransaction` on Hedera Testnet. The result — including the on-chain transaction ID and a link to HashScan — is streamed back into the chat interface in real time.
+
+```
+User prompt  →  LLM intent parsing  →  Hedera ContractExecuteTransaction  →  Streamed response
+```
+
+## Architecture
+
+| Layer | Technology | Role |
+|-------|-----------|------|
+| Frontend | Next.js 16, React, Tailwind CSS | Dark-themed chat interface |
+| AI | Vercel AI SDK v6, GPT-4o-mini | Intent parsing and tool orchestration |
+| Blockchain | Hedera SDK (`@hashgraph/sdk`) | On-chain transaction execution |
+| Streaming | Server-Sent Events | Real-time response delivery |
+
+The API route (`/api/chat`) defines an `execute_deposit` tool using AI SDK's structured tool system. When the LLM decides a deposit is needed, it invokes the tool with validated parameters (`amountInHbar`, `vaultAddress`). The tool constructs and submits a `ContractExecuteTransaction` to Hedera, then returns the transaction ID to the model for a natural-language summary.
+
+## Setup
+
+### Prerequisites
+
+- Node.js 20+
+- An [OpenAI API key](https://platform.openai.com/api-keys)
+- A [Hedera Testnet account](https://portal.hedera.com/) (free)
+
+### Install and run
+
+```bash
+git clone https://github.com/vjb/bonzo-concierge.git
+cd bonzo-concierge
+npm install
+```
+
+Create a `.env` file in the project root:
+
+```env
+OPENAI_API_KEY=sk-...
+HEDERA_ACCOUNT_ID=0.0.XXXXXXX
+HEDERA_PRIVATE_KEY=302e...          # ECDSA hex private key
+HEDERA_NETWORK=testnet
+```
+
+Start the dev server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+src/
+  app/
+    api/chat/route.ts   # Streaming chat endpoint with execute_deposit tool
+    page.tsx             # Chat UI (useChat + tool invocation cards)
+    layout.tsx           # Root layout, Inter font, dark mode
+    globals.css          # Design tokens, animations
+scripts/
+  test_hedera_connection.ts  # Validates Hedera SDK auth
+  test_ai_tool.ts            # Validates LLM intent parsing
+  test_api_route.ts          # Validates /api/chat streaming
+```
 
-## Learn More
+## Key Features
 
-To learn more about Next.js, take a look at the following resources:
+- **Natural language transactions** — users describe what they want; the AI determines and executes the right on-chain action.
+- **Streaming responses** — Server-Sent Events deliver token-by-token output so the interface feels responsive.
+- **Tool invocation UI** — dedicated card components show transaction status (processing, success, failure) with input parameters and HashScan links.
+- **Error handling** — failed transactions return structured error messages instead of crashing the conversation.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Testing
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Each phase was developed test-first. The scripts in `scripts/` can be re-run to validate each layer independently:
 
-## Deploy on Vercel
+```bash
+npx tsx scripts/test_hedera_connection.ts   # Phase 2: SDK auth
+npx tsx scripts/test_ai_tool.ts             # Phase 3: LLM tool calling
+npx tsx scripts/test_api_route.ts           # Phase 4: API route (requires dev server)
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Built With
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [Next.js](https://nextjs.org/) — React framework
+- [Vercel AI SDK](https://ai-sdk.dev/) — LLM integration and streaming
+- [Hedera SDK](https://github.com/hashgraph/hedera-sdk-js) — Blockchain transactions
+- [OpenAI](https://openai.com/) — GPT-4o-mini for intent parsing
+- [Tailwind CSS](https://tailwindcss.com/) — Styling
+
+## License
+
+MIT
