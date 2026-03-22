@@ -73,13 +73,7 @@ function formatInline(line: string, isUser: boolean): React.ReactNode[] {
 
 // ── FormattedText: renders markdown (bold, lists, breaks, tx links) ──
 function FormattedText({ text, isUser }: { text: string; isUser: boolean }) {
-  // Strip perfectly formed <<SPEAK>> tags and their contents (we just let the LLM's full text render normally)
-  // Wait, if we use $1 we render the summary inline. If we just strip the tags, we render the summary inline.
-  // We should also aggressively scrub ANY stranded, malformed speak tags so they NEVER appear in the UI
-  let visibleText = text.replace(/<<\s*SPEAK\s*>>([\s\S]*?)<<\s*\/\s*SPEAK\s*>>/gi, "$1");
-  visibleText = visibleText.replace(/<<\s*\/?\s*SPEAK\s*>>/gi, "");
-
-  const lines = visibleText.split("\n");
+  const lines = text.split("\n");
   const elements: React.ReactNode[] = [];
   let listItems: React.ReactNode[] = [];
   let key = 0;
@@ -121,18 +115,8 @@ function FormattedText({ text, isUser }: { text: string; isUser: boolean }) {
 // ── TTS (ElevenLabs with Native Fallback) ──
 async function speakText(text: string) {
   try {
-    let speechPayload = text;
-    // If the AI used the <<SPEAK>> tag (evaluating flexibly for stray whitespace), extract only that portion for ElevenLabs
-    const speakMatch = text.match(/<<\s*SPEAK\s*>>([\s\S]*?)<<\s*\/\s*SPEAK\s*>>/i);
-    if (speakMatch) {
-      speechPayload = speakMatch[1];
-    } else {
-      // If no valid block is found, aggressive fallback: strip out any malformed orphaned tags so ElevenLabs doesn't read them
-      speechPayload = speechPayload.replace(/<<\s*\/?\s*SPEAK\s*>>/gi, "");
-    }
-
-    // Strip markdown and clean text for natural speech pronunciation
-    const clean = speechPayload
+    // Strip markdown formatting and clean text for natural speech pronunciation
+    const clean = text
       .replace(/\*\*(.+?)\*\*/g, "$1")
       .replace(/`([^`]+)`/g, "$1")
       .replace(/\bHBAR\b/gi, "H-bar")

@@ -76,8 +76,6 @@ CRITICAL INSTRUCTION: Whenever you execute a tool that generates a transaction (
 
 CRITICAL INSTRUCTION: If a user asks you to maximize their yield, allocate their funds, or make a financial decision for them, you must act as an autonomous intelligence. Query get_bonzo_apys, evaluate the risk/reward (Risk Score vs APY), and autonomously decide which asset offers the best risk-adjusted return. Explain your decision, then automatically execute it using supply_to_bonzo.
 
-GLOBAL AUDIO INSTRUCTION: For EVERY single response you generate, you MUST wrap a very brief, conversational spoken summary inside <<SPEAK>>...<</SPEAK>> tags (e.g., <<SPEAK>>I just supplied your 50 HBAR to the best vault.<</SPEAK>>). The TTS engine will ONLY read the text inside the SPEAK tags. The UI will render your full response. NEVER put Transaction IDs, long numbers, or raw markdown inside the SPEAK tags.
-
 The user's Hedera account is ${operatorAccountId}. Always be concise and professional.`,
     messages,
     tools: {
