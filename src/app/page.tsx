@@ -30,14 +30,17 @@ function getToolParts(msg: UIMessage): ToolInvocationPart[] {
 
 // ── Inline formatter (bold, code, tx links) ──
 function formatInline(line: string, isUser: boolean): React.ReactNode[] {
-  // Process tx IDs FIRST (before bold) to avoid nesting collisions
-  // when the AI wraps a tx ID in **bold**
-  const tagged = line
+  // Strip bold/code marks specifically around Hedera TX IDs if the AI tried to style them
+  // to avoid nesting our custom parsing tags
+  const cleaned = line.replace(/[\*`]+(\d+\.\d+\.\d+@\d+\.\d+)[\*`]+/g, "$1");
+
+  const tagged = cleaned
     .replace(/(\d+\.\d+\.\d+@\d+\.\d+)/g, "<<T>>$1<</T>>")
-    .replace(/\*\*(.+?)\*\*/g, "<<B>>$1<</B>>")
+    .replace(/\*\*(.*?)\*\*/g, "<<B>>$1<</B>>")
     .replace(/`([^`]+)`/g, "<<C>>$1<</C>>");
 
-  const tagRe = /<<(B|C|T)>>(.+?)<<\/(B|C|T)>>/g;
+  // Use \1 to ensure opening and closing tags perfectly match, preventing cross-tag bleed
+  const tagRe = /<<(B|C|T)>>(.+?)<<\/\1>>/g;
   const nodes: React.ReactNode[] = [];
   let last = 0;
   let m: RegExpExecArray | null;
