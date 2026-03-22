@@ -299,8 +299,15 @@ export default function ChatPage() {
       {/* Input */}
       <div className="px-6 pb-6 pt-3 bg-white">
         {/* Suggested Prompts Array */}
-        <div className="flex gap-2 mb-4 overflow-x-auto hide-scrollbar whitespace-nowrap -mx-6 px-6">
-          {["What's my HBAR balance?", "What are the best yields on Bonzo?", "Pin 1113: Supply 5 HBAR to Bonzo", "Pin 1113: Send 1 HBAR to 0.0.1234"].map((s) => (
+        <div className="flex flex-wrap gap-2 mb-4">
+          {[
+            "What are the best yields on Bonzo?", 
+            "Pin 1113: Supply 5 HBAR to Bonzo", 
+            "Given current yields and risk scores, what's a safe strategy?",
+            "Max my yield autonomously! Pin 1113",
+            "What's my HBAR balance?", 
+            "Pin 1113: Send 1 HBAR to 0.0.1234"
+          ].map((s) => (
             <button
               key={s}
               type="button"
@@ -308,7 +315,7 @@ export default function ChatPage() {
                 setInput("");
                 sendMessage({ text: s });
               }}
-              className="px-3 py-1.5 text-[13px] rounded-full border border-gray-200 text-gray-600 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50/50 transition-colors whitespace-nowrap cursor-pointer shrink-0"
+              className="px-3 py-1.5 text-[13px] rounded-full border border-gray-200 text-gray-600 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50/50 transition-colors cursor-pointer shrink-0"
             >
               {s}
             </button>
