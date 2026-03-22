@@ -16,6 +16,18 @@ Built for the **Hedera Hello Future Apex Hackathon** (AI & Agents Track + Bonzo 
 
 ---
 
+## ⚠️ Hackathon Note: Why the Yield Oracle is Mocked
+
+During development, we built a fully autonomous AI routing engine capable of reading and making financial decisions based on live API data. However, for this specific recorded hackathon submission, the `get_bonzo_apys` tool uses a **simulated JSON payload** instead of a live `fetch()` to Bonzo's Lend Data API.
+
+**Why?**
+1. **Cloudflare WAF Blocks:** The primary Bonzo Finance API (`data.bonzo.finance`) is actively protected by Cloudflare. Because our Agent acts as a Node.js server rather than a Chrome browser, Cloudflare's anti-bot JavaScript challenge blocks our raw HTTP requests with a `403 Forbidden` error. 
+2. **Staging Maintenance:** The temporary staging API (`mainnet-data-staging.bonzo.finance`), while bypassing Cloudflare, is currently undergoing active maintenance and returns `null` for all `supply_apy` values, which mathematically breaks the AI's risk/reward decision engine.
+
+To guarantee a flawless live recording of the **Intent-Based Agent Execution**, we engineered the mock data to perfectly match Bonzo's official JSON `reserves` schema. The AI reads the data, makes the autonomous decision, and executes a heavily verified, physically real integration on the Hedera Hashgraph Testnet.
+
+---
+
 ## 🛠️ Architecture & Tech Stack
 
 ```text
