@@ -113,8 +113,19 @@ function FormattedText({ text, isUser }: { text: string; isUser: boolean }) {
 }
 
 // ── TTS (ElevenLabs with Native Fallback) ──
+let currentAudio: HTMLAudioElement | null = null;
+
 async function speakText(text: string) {
   try {
+    // Cancel any currently playing speech to prevent overlapping voices
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio = null;
+    }
+
     // Strip markdown formatting and clean text for natural speech pronunciation
     const clean = text
       .replace(/\*\*(.+?)\*\*/g, "$1")
@@ -140,6 +151,7 @@ async function speakText(text: string) {
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
     const audio = new Audio(url);
+    currentAudio = audio;
     audio.play();
     audio.onended = () => URL.revokeObjectURL(url);
   } catch {
@@ -185,13 +197,20 @@ export default function ChatPage() {
 
   // Auto-TTS: speak last assistant message when streaming finishes (if mic was used)
   useEffect(() => {
-    if (status !== "ready" || !voiceMode || messages.length === 0) return;
+    if (status !== "ready" || messages.length === 0) return;
     const lastMsg = messages[messages.length - 1];
     if (lastMsg.role !== "assistant") return;
-    const text = getTextParts(lastMsg);
-    if (text && text !== lastSpokenRef.current) {
-      lastSpokenRef.current = text;
-      speakText(text);
+    
+    // Check if we've already processed this message ID to avoid double-speaking 
+    // or reading previous text-mode responses when voice mode is activated
+    if (lastSpokenRef.current === lastMsg.id) return;
+    lastSpokenRef.current = lastMsg.id;
+
+    if (voiceMode) {
+      const text = getTextParts(lastMsg);
+      if (text) {
+        speakText(text);
+      }
     }
   }, [messages, status, voiceMode]);
 
