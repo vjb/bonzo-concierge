@@ -2,17 +2,22 @@
  * POST /api/chat
  *
  * Streaming chat API route using AI SDK v6 + Hedera.
- * Provides an `execute_deposit` tool that deposits HBAR into a Bonzo vault.
+ * Tools:
+ *   - transfer_hbar: send HBAR to any Hedera account (demo-ready)
+ *   - deposit_to_vault: deposit HBAR into a Bonzo vault contract
  */
-import { streamText, tool, stepCountIs } from "ai";
+import { streamText, tool, stepCountIs, convertToModelMessages } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 import {
   Client,
   PrivateKey,
+  TransferTransaction,
   ContractExecuteTransaction,
+  AccountBalanceQuery,
   Hbar,
   ContractId,
+  AccountId,
 } from "@hashgraph/sdk";
 
 // Force dynamic (no caching) for streaming
@@ -44,19 +49,121 @@ function getHederaClient(): Client {
 // POST handler
 // ------------------------------------------------------------------
 export async function POST(req: Request) {
-  const { messages } = await req.json();
+  const { messages: uiMessages } = await req.json();
+
+  // Convert UIMessages (from useChat) to ModelMessages (for streamText)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const stripped = uiMessages.map(({ id, ...rest }: any) => rest);
+  const messages = await convertToModelMessages(stripped);
+
+  const operatorAccountId = process.env.HEDERA_ACCOUNT_ID!;
 
   const result = streamText({
     model: openai("gpt-4o-mini"),
-    system: `You are the Bonzo Agentic Concierge — a helpful DeFi assistant on the Hedera network.
-You help users deposit HBAR into Bonzo vault smart contracts.
-When a user wants to deposit, call the execute_deposit tool with the amount and vault address.
-Always confirm the details before executing. Be concise and professional.`,
+    system: `You are the Bonzo Agentic Concierge — a DeFi assistant on the Hedera network.
+
+You can:
+1. Check the HBAR balance of any Hedera account using the check_balance tool.
+2. Transfer HBAR to any Hedera account using the transfer_hbar tool.
+3. Deposit HBAR into a Bonzo vault smart contract using the deposit_to_vault tool.
+
+When a user asks about their balance, use check_balance.
+When a user asks to send, transfer, or pay HBAR, use transfer_hbar.
+When a user asks to deposit into a vault, use deposit_to_vault.
+
+The user's Hedera account is ${operatorAccountId}. Always be concise.`,
     messages,
     tools: {
-      execute_deposit: tool({
+      // ── Tool 1: Check Balance ──
+      check_balance: tool({
         description:
-          "Execute a deposit of HBAR into a Bonzo vault smart contract on Hedera.",
+          "Check the HBAR balance of a Hedera account.",
+        inputSchema: z.object({
+          accountId: z
+            .string()
+            .describe(
+              "The Hedera account ID to check (e.g. 0.0.1234). Use the user's account if not specified."
+            ),
+        }),
+        execute: async ({ accountId }) => {
+          try {
+            const client = getHederaClient();
+            const balance = await new AccountBalanceQuery()
+              .setAccountId(AccountId.fromString(accountId))
+              .execute(client);
+
+            return {
+              success: true,
+              accountId,
+              balanceInHbar: balance.hbars.toString(),
+              message: `Account ${accountId} has ${balance.hbars.toString()}`,
+            };
+          } catch (error: unknown) {
+            const msg =
+              error instanceof Error ? error.message : String(error);
+            return {
+              success: false,
+              error: msg,
+              message: `Balance check failed: ${msg}`,
+            };
+          }
+        },
+      }),
+
+      // ── Tool 2: HBAR Transfer (demo-ready) ──
+      transfer_hbar: tool({
+        description:
+          "Transfer HBAR from the user's account to another Hedera account.",
+        inputSchema: z.object({
+          recipientAccountId: z
+            .string()
+            .describe(
+              "The recipient Hedera account ID (e.g. 0.0.1234)"
+            ),
+          amountInHbar: z
+            .number()
+            .describe("The amount of HBAR to send"),
+        }),
+        execute: async ({ recipientAccountId, amountInHbar }) => {
+          try {
+            const client = getHederaClient();
+            const senderAccountId = process.env.HEDERA_ACCOUNT_ID!;
+
+            const tx = new TransferTransaction()
+              .addHbarTransfer(
+                AccountId.fromString(senderAccountId),
+                Hbar.fromTinybars(-amountInHbar * 100_000_000)
+              )
+              .addHbarTransfer(
+                AccountId.fromString(recipientAccountId),
+                Hbar.fromTinybars(amountInHbar * 100_000_000)
+              );
+
+            const response = await tx.execute(client);
+            const receipt = await response.getReceipt(client);
+
+            return {
+              success: true,
+              transactionId: response.transactionId.toString(),
+              status: receipt.status.toString(),
+              message: `Sent ${amountInHbar} HBAR to ${recipientAccountId}`,
+            };
+          } catch (error: unknown) {
+            const msg =
+              error instanceof Error ? error.message : String(error);
+            return {
+              success: false,
+              error: msg,
+              message: `Transfer failed: ${msg}`,
+            };
+          }
+        },
+      }),
+
+      // ── Tool 2: Vault Deposit ──
+      deposit_to_vault: tool({
+        description:
+          "Deposit HBAR into a Bonzo vault smart contract on Hedera.",
         inputSchema: z.object({
           amountInHbar: z
             .number()
@@ -71,15 +178,12 @@ Always confirm the details before executing. Be concise and professional.`,
           try {
             const client = getHederaClient();
 
-            // Build a ContractExecuteTransaction calling the deposit() function
-            // deposit() has no args — value is sent as payableAmount
             const tx = new ContractExecuteTransaction()
               .setContractId(ContractId.fromEvmAddress(0, 0, vaultAddress))
               .setGas(200_000)
               .setPayableAmount(new Hbar(amountInHbar))
-              // deposit() selector = 0xd0e30db0
               .setFunctionParameters(
-                Buffer.from("d0e30db0", "hex")
+                Buffer.from("d0e30db0", "hex") // deposit() selector
               );
 
             const response = await tx.execute(client);
@@ -92,12 +196,12 @@ Always confirm the details before executing. Be concise and professional.`,
               message: `Deposited ${amountInHbar} HBAR to vault ${vaultAddress}`,
             };
           } catch (error: unknown) {
-            const message =
+            const msg =
               error instanceof Error ? error.message : String(error);
             return {
               success: false,
-              error: message,
-              message: `Failed to deposit: ${message}`,
+              error: msg,
+              message: `Deposit failed: ${msg}`,
             };
           }
         },

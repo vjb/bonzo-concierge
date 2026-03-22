@@ -64,7 +64,7 @@ export default function ChatPage() {
     const text = input.trim();
     if (!text || isStreaming) return;
     setInput("");
-    sendMessage({ role: "user", content: text, parts: [{ type: "text", text }] });
+    sendMessage({ text });
   }
 
   return (
@@ -101,15 +101,15 @@ export default function ChatPage() {
                 Welcome to Bonzo Concierge
               </p>
               <p className="text-sm text-gray-500 mt-1 max-w-md">
-                I can help you deposit HBAR into Bonzo vault contracts on
-                Hedera. Try saying:
+                I can check balances, transfer HBAR, and deposit into
+                Bonzo vaults. Try:
               </p>
             </div>
             <div className="flex flex-wrap gap-2 justify-center">
               {[
-                "Deposit 10 HBAR to 0xABC...",
-                "What can you help me with?",
-                "How do Bonzo vaults work?",
+                "What's my HBAR balance?",
+                "Send 1 HBAR to 0.0.1234",
+                "What can you do?",
               ].map((suggestion) => (
                 <button
                   key={suggestion}
@@ -231,25 +231,30 @@ function ToolCard({
   const isRunning =
     tool.state === "call" || tool.state === "partial-call";
   const isDone = tool.state === "result";
-  const output = tool.output as {
-    success?: boolean;
-    transactionId?: string;
-    error?: string;
-    message?: string;
-  } | null;
-  const formattedInput = tool.input as {
-    amountInHbar?: number;
-    vaultAddress?: string;
-  } | null;
+  const output = tool.output as Record<string, unknown> | null;
+  const inp = (tool.input ?? {}) as Record<string, unknown>;
+
+  const success = output?.success as boolean | undefined;
+  const transactionId = output?.transactionId as string | undefined;
+  const errorMsg = output?.error as string | undefined;
+  const balanceInHbar = output?.balanceInHbar as string | undefined;
+
+  // Pick label based on tool name
+  const toolLabels: Record<string, { running: string; done: string }> = {
+    check_balance: { running: "Checking Balance...", done: "Balance Retrieved" },
+    transfer_hbar: { running: "Sending HBAR...", done: "Transfer Complete" },
+    deposit_to_vault: { running: "Processing Deposit...", done: "Deposit Complete" },
+  };
+  const labels = toolLabels[tool.toolName] ?? { running: "Processing...", done: "Complete" };
 
   return (
     <div
       className={`rounded-xl border p-4 text-sm space-y-3 ${
         isRunning
           ? "border-indigo-500/40 bg-indigo-500/5 animate-pulse-glow"
-          : isDone && output?.success
+          : isDone && success
           ? "border-emerald-500/30 bg-emerald-500/5"
-          : isDone && !output?.success
+          : isDone && !success
           ? "border-red-500/30 bg-red-500/5"
           : "border-[var(--border)] bg-[var(--surface)]"
       }`}
@@ -259,80 +264,76 @@ function ToolCard({
         {isRunning && (
           <>
             <span className="inline-block w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />
-            <span className="text-indigo-300 font-medium">
-              Processing Transaction...
-            </span>
+            <span className="text-indigo-300 font-medium">{labels.running}</span>
           </>
         )}
-        {isDone && output?.success && (
+        {isDone && success && (
           <>
             <span className="text-emerald-400">✓</span>
-            <span className="text-emerald-300 font-medium">
-              Transaction Complete
-            </span>
+            <span className="text-emerald-300 font-medium">{labels.done}</span>
           </>
         )}
-        {isDone && !output?.success && (
+        {isDone && !success && (
           <>
             <span className="text-red-400">✗</span>
-            <span className="text-red-300 font-medium">
-              Transaction Failed
-            </span>
+            <span className="text-red-300 font-medium">Failed</span>
           </>
         )}
       </div>
 
-      {/* Input details */}
-      {formattedInput && (
+      {/* Input parameters */}
+      {Object.keys(inp).length > 0 && (
         <div className="grid grid-cols-2 gap-2 text-xs">
-          {formattedInput.amountInHbar != null && (
-            <div className="bg-black/20 rounded-lg px-3 py-2">
-              <span className="text-gray-500 block">Amount</span>
-              <span className="text-gray-200 font-mono">
-                {formattedInput.amountInHbar} HBAR
+          {Object.entries(inp).map(([key, val]) => (
+            <div key={key} className="bg-black/20 rounded-lg px-3 py-2">
+              <span className="text-gray-500 block capitalize">
+                {key.replace(/([A-Z])/g, " $1").replace(/^./, s => s.toUpperCase())}
               </span>
-            </div>
-          )}
-          {formattedInput.vaultAddress && (
-            <div className="bg-black/20 rounded-lg px-3 py-2">
-              <span className="text-gray-500 block">Vault</span>
               <span className="text-gray-200 font-mono text-[11px] break-all">
-                {formattedInput.vaultAddress}
+                {String(val)}{key.toLowerCase().includes("hbar") ? " HBAR" : ""}
               </span>
             </div>
-          )}
+          ))}
         </div>
       )}
 
       {/* Shimmer bar while loading */}
       {isRunning && <div className="h-1 rounded-full shimmer" />}
 
-      {/* Result */}
-      {isDone && output?.transactionId && (
+      {/* Balance result */}
+      {isDone && balanceInHbar && (
+        <div className="bg-black/20 rounded-lg px-3 py-2">
+          <span className="text-gray-500 text-xs block">Balance</span>
+          <span className="text-gray-200 font-mono text-lg">
+            {balanceInHbar}
+          </span>
+        </div>
+      )}
+
+      {/* Transaction result */}
+      {isDone && transactionId && (
         <div className="bg-black/20 rounded-lg px-3 py-2 flex items-center justify-between gap-2">
           <div>
-            <span className="text-gray-500 text-xs block">
-              Transaction ID
-            </span>
+            <span className="text-gray-500 text-xs block">Transaction ID</span>
             <span className="text-gray-300 font-mono text-xs break-all">
-              {output.transactionId}
+              {transactionId}
             </span>
           </div>
           <a
-            href={`https://hashscan.io/testnet/transaction/${output.transactionId}`}
+            href={`https://hashscan.io/testnet/transaction/${transactionId}`}
             target="_blank"
             rel="noopener noreferrer"
             className="px-3 py-1.5 rounded-lg bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 text-xs hover:bg-indigo-500/30 transition-colors flex-shrink-0"
           >
-            View ↗
+            HashScan ↗
           </a>
         </div>
       )}
 
       {/* Error */}
-      {isDone && output?.error && (
+      {isDone && errorMsg && (
         <div className="bg-red-500/10 rounded-lg px-3 py-2 text-xs text-red-300">
-          {output.error}
+          {errorMsg}
         </div>
       )}
     </div>
