@@ -248,7 +248,7 @@ export default function ChatPage() {
               </p>
             </div>
             <div className="flex flex-wrap gap-2 justify-center">
-              {["What's my HBAR balance?", "Send 1 HBAR to 0.0.1234", "What can you do?"].map((s) => (
+              {["What are the best yields on Bonzo?", "Supply 50 HBAR to Bonzo", "What's my HBAR balance?"].map((s) => (
                 <button key={s} onClick={() => setInput(s)}
                   className="px-4 py-2 text-sm rounded-full border border-gray-200 text-gray-600 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50/50 transition-all cursor-pointer">
                   {s}
@@ -358,11 +358,13 @@ function ExecutionTrace({ tool }: { tool: ToolInvocationPart["toolInvocation"] }
   const errorMsg = output?.error as string | undefined;
   const balanceInHbar = output?.balanceInHbar as string | undefined;
   const outputMessage = output?.message as string | undefined;
+  const hasRates = Boolean(output?.rates);
 
   const displayNames: Record<string, string> = {
     check_balance: "Querying account balance",
     transfer_hbar: "Executing HBAR transfer",
-    deposit_to_vault: "Processing vault deposit",
+    get_bonzo_apys: "Fetching Bonzo protocol yields",
+    supply_to_bonzo: "Supplying to Bonzo lending pool",
   };
   const displayName = displayNames[tool.toolName] ?? tool.toolName;
 
@@ -416,7 +418,23 @@ function ExecutionTrace({ tool }: { tool: ToolInvocationPart["toolInvocation"] }
         </div>
       )}
 
-      {isDone && outputMessage && !transactionId && !balanceInHbar && (
+      {/* Yield rates output */}
+      {isDone && hasRates && (
+        <div className="bg-purple-50 rounded-lg px-3 py-2.5 text-xs border border-purple-100 space-y-2">
+          <div className="text-purple-600 font-medium">Bonzo Protocol Yields</div>
+          <div className="grid grid-cols-3 gap-2">
+            {Object.entries((output?.rates ?? {}) as Record<string, { supplyApy: string; borrowApy: string }>).map(([asset, rates]) => (
+              <div key={asset} className="bg-white rounded p-1.5 border border-purple-50 text-center">
+                <div className="font-semibold text-gray-800">{asset}</div>
+                <div className="text-emerald-600 text-[10px]">Supply: {rates.supplyApy}</div>
+                <div className="text-red-500 text-[10px]">Borrow: {rates.borrowApy}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {isDone && outputMessage && !transactionId && !balanceInHbar && !hasRates && (
         <p className="text-gray-500 text-xs">{outputMessage}</p>
       )}
 

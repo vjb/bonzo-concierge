@@ -60,18 +60,19 @@ export async function POST(req: Request) {
 
   const result = streamText({
     model: openai("gpt-4o-mini"),
-    system: `You are the Bonzo Agentic Concierge — a DeFi assistant on the Hedera network.
+    system: `You are the Bonzo Agentic Concierge — a DeFi assistant on the Hedera network specifically for the Bonzo Finance protocol.
 
 You can:
-1. Check the HBAR balance of any Hedera account using the check_balance tool.
-2. Transfer HBAR to any Hedera account using the transfer_hbar tool.
-3. Deposit HBAR into a Bonzo vault smart contract using the deposit_to_vault tool.
+1. Check HBAR balances using check_balance.
+2. Transfer HBAR using transfer_hbar.
+3. Check Bonzo protocol yields (APY) using get_bonzo_apys.
+4. Supply HBAR to the Bonzo lending pool using supply_to_bonzo.
 
-When a user asks about their balance, use check_balance.
-When a user asks to send, transfer, or pay HBAR, use transfer_hbar.
-When a user asks to deposit into a vault, use deposit_to_vault.
+When a user asks about yields, rates, or APYs on Bonzo, use get_bonzo_apys.
+When a user wants to supply, deposit, or earn yield with their HBAR on Bonzo, use supply_to_bonzo.
+When a user wants to send or transfer HBAR to another address, use transfer_hbar.
 
-The user's Hedera account is ${operatorAccountId}. Always be concise.`,
+The user's Hedera account is ${operatorAccountId}. Always be concise and professional.`,
     messages,
     tools: {
       // ── Tool 1: Check Balance ──
@@ -160,30 +161,47 @@ The user's Hedera account is ${operatorAccountId}. Always be concise.`,
         },
       }),
 
-      // ── Tool 2: Vault Deposit ──
-      deposit_to_vault: tool({
+      // ── Tool 3: Bonzo APY Oracle ──
+      get_bonzo_apys: tool({
+        description: "Get the current supply and borrow APYs for assets on the Bonzo Finance protocol.",
+        inputSchema: z.object({}),
+        execute: async () => {
+          // Simulate fetching from Bonzo's subgraph/API
+          await new Promise(resolve => setTimeout(resolve, 800));
+          return {
+            success: true,
+            message: "Successfully fetched Bonzo APYs.",
+            rates: {
+              HBAR: { supplyApy: "6.2%", borrowApy: "8.5%" },
+              USDC: { supplyApy: "8.5%", borrowApy: "11.2%" },
+              WBTC: { supplyApy: "2.1%", borrowApy: "4.8%" }
+            }
+          };
+        }
+      }),
+
+      // ── Tool 4: Bonzo Supply Execution ──
+      supply_to_bonzo: tool({
         description:
-          "Deposit HBAR into a Bonzo vault smart contract on Hedera.",
+          "Supply HBAR to the Bonzo Finance lending pool to earn yield.",
         inputSchema: z.object({
           amountInHbar: z
             .number()
-            .describe("The amount of HBAR to deposit"),
-          vaultAddress: z
-            .string()
-            .describe(
-              "The EVM address (0x...) of the Bonzo vault contract"
-            ),
+            .describe("The amount of HBAR to supply to Bonzo"),
         }),
-        execute: async ({ amountInHbar, vaultAddress }) => {
+        execute: async ({ amountInHbar }) => {
           try {
             const client = getHederaClient();
+            
+            // For hackathon demo: Fake EVM address representing Bonzo pool
+            const bonzoPoolAddress = "0x000000000000000000000000000000000B0NZ000";
 
             const tx = new ContractExecuteTransaction()
-              .setContractId(ContractId.fromEvmAddress(0, 0, vaultAddress))
-              .setGas(200_000)
+              .setContractId(ContractId.fromEvmAddress(0, 0, bonzoPoolAddress))
+              .setGas(300_000)
               .setPayableAmount(new Hbar(amountInHbar))
               .setFunctionParameters(
-                Buffer.from("d0e30db0", "hex") // deposit() selector
+                Buffer.from("deposit()", "utf-8") // simulated selector
               );
 
             const response = await tx.execute(client);
@@ -193,7 +211,7 @@ The user's Hedera account is ${operatorAccountId}. Always be concise.`,
               success: true,
               transactionId: response.transactionId.toString(),
               status: receipt.status.toString(),
-              message: `Deposited ${amountInHbar} HBAR to vault ${vaultAddress}`,
+              message: `Successfully supplied ${amountInHbar} HBAR to the Bonzo lending pool.`,
             };
           } catch (error: unknown) {
             const msg =
@@ -201,7 +219,7 @@ The user's Hedera account is ${operatorAccountId}. Always be concise.`,
             return {
               success: false,
               error: msg,
-              message: `Deposit failed: ${msg}`,
+              message: `Supply failed: ${msg}`,
             };
           }
         },
