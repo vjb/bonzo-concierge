@@ -10,7 +10,7 @@ Built for the **Hedera Hello Future Apex Hackathon** (AI & Agents Track + Bonzo 
 
 ## 🚀 Features
 
-- **Voice-to-DeFi (Web Speech API + ElevenLabs TTS):** Click the mic, say *"Supply 50 HBAR to Bonzo,"* and the AI handles the rest. Built with a custom `<<SPEAK>>` NLP engine that dynamically pipes verbose data grids to the visual UI while summarizing cleanly out loud.
+- **Voice-to-DeFi (Web Speech API + ElevenLabs TTS):** Click the mic, say *"Supply 5 HBAR to Bonzo,"* and the AI handles the rest. Built with a custom `<<SPEAK>>` NLP engine that dynamically pipes verbose data grids to the visual UI while summarizing cleanly out loud.
 - **Walletless "Agent Treasury":** Users do not need a browser extension wallet. The AI acts as a sophisticated keeper/operator, executing trades on their behalf via Hedera Core SDK.
 - **Bonzo Yield Oracle:** The agent can query and compare current supply/borrow APYs for HBAR, USDC, and WBTC.
 
