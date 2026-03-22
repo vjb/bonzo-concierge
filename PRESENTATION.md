@@ -48,7 +48,7 @@ Extract the exact text below to generate a **5-slide pitch deck** that follows t
 *   **The Brain:** Our AI understands your financial goals in natural language instantly.
 *   **The Engine:** Powered silently by Hedera's lightning-fast network, transactions settle in seconds without the user ever seeing a smart contract.
 *   **The Integration:** Directly connected to Bonzo Finance to offer the best community yields in real-time.
-*   **Trust Built-In:** A clean "Execution Trace" shows users exactly what the agent is doing in the background to build total confidence.
+*   **Trust Built-In:** The agent seamlessly outputs absolute, undeniable proof of execution by generating direct, clickable links to the live Hedera HashScan ledger inside your chat.
 
 ---
 
