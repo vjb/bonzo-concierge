@@ -99,7 +99,7 @@ Extract the exact text below to generate a **5-slide pitch deck** that follows t
 **[1:55 - 2:30] 🟢 LIVE SCREENCAST: Yield Oracle & Autonomous Decision-Making**
 "Now, let's look at the actual intelligent decision-making the Bonzo bounty asked for. I don't want to micromanage my treasury. I click my microphone and tell the assistant exactly what my intent is:"
 *(Action: Click the Microphone. Speak clearly into it: "I have 50 HBAR. I want low-risk yield. Scan Bonzo for the best APY right now and supply it there." **Pause your voiceover** to let the AI speak the summary while the grid renders).*
-"The concierge instantly pulled live market rates from our Bonzo Yield Oracle. It weighed the risk against the APY, autonomously made the financial decision that USDC was better, built the transaction payload, signed it, and executed it on Hedera."
+"The concierge instantly pulled live market rates from our Bonzo Yield Oracle. It weighed the risk against the APY, autonomously verified the HBAR vault was the best option, built the transaction payload, signed it, and executed it on Hedera."
 
 **[2:30 - 2:50] 🟢 LIVE SCREENCAST: HashScan Verification**
 *(Action: Wait for the chat to confirm the transaction. **Click the exact HashScan link** returned by the AI so the video records the new tab opening).*
