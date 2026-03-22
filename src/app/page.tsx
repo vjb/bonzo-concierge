@@ -73,7 +73,9 @@ function formatInline(line: string, isUser: boolean): React.ReactNode[] {
 
 // ── FormattedText: renders markdown (bold, lists, breaks, tx links) ──
 function FormattedText({ text, isUser }: { text: string; isUser: boolean }) {
-  const lines = text.split("\n");
+  // Strip <<SPEAK>> tags so they are completely invisible to the user in the chat UI
+  const visibleText = text.replace(/<<SPEAK>>([\s\S]*?)<<\/SPEAK>>/gi, "$1");
+  const lines = visibleText.split("\n");
   const elements: React.ReactNode[] = [];
   let listItems: React.ReactNode[] = [];
   let key = 0;
@@ -115,8 +117,15 @@ function FormattedText({ text, isUser }: { text: string; isUser: boolean }) {
 // ── TTS (ElevenLabs with Native Fallback) ──
 async function speakText(text: string) {
   try {
+    let speechPayload = text;
+    // If the AI used the <<SPEAK>> tag, extract only that portion for ElevenLabs
+    const speakMatch = text.match(/<<SPEAK>>([\s\S]*?)<<\/SPEAK>>/i);
+    if (speakMatch) {
+      speechPayload = speakMatch[1];
+    }
+
     // Strip markdown and clean text for natural speech pronunciation
-    const clean = text
+    const clean = speechPayload
       .replace(/\*\*(.+?)\*\*/g, "$1")
       .replace(/`([^`]+)`/g, "$1")
       .replace(/\bHBAR\b/gi, "H-bar")
