@@ -109,7 +109,7 @@ function FormattedText({ text, isUser }: { text: string; isUser: boolean }) {
   return <>{elements}</>;
 }
 
-// ── TTS (ElevenLabs) ──
+// ── TTS (ElevenLabs with Native Fallback) ──
 async function speakText(text: string) {
   try {
     // Strip markdown for cleaner speech
@@ -119,6 +119,15 @@ async function speakText(text: string) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text: clean }),
     });
+    
+    // If the server indicates ElevenLabs is not configured (501), fallback to native browser TTS
+    if (res.status === 501) {
+      console.log("[TTS] ElevenLabs key missing, falling back to native browser speech synthesis.");
+      const utterance = new SpeechSynthesisUtterance(clean);
+      window.speechSynthesis.speak(utterance);
+      return;
+    }
+
     if (!res.ok) return;
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);

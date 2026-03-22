@@ -17,7 +17,7 @@ export async function POST(req: Request) {
 
   const apiKey = process.env.ELEVEN_LABS_KEY;
   if (!apiKey) {
-    return new Response("ElevenLabs API key not configured", { status: 500 });
+    return new Response("ElevenLabs API key not configured", { status: 501 });
   }
 
   const response = await fetch(

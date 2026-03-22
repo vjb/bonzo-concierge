@@ -53,7 +53,7 @@ Create a `.env` file in the root directory:
 ```env
 # AI Models
 OPENAI_API_KEY=sk-...
-ELEVEN_LABS_KEY=sk_...
+ELEVEN_LABS_KEY=sk_... # (Optional) Falls back to browser native TTS if omitted
 
 # Hedera Agent Treasury (Testnet)
 HEDERA_ACCOUNT_ID=0.0.XXXXXX
