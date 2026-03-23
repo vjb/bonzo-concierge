@@ -22,9 +22,16 @@ Bonzo Concierge isn't just a wrapper; it leverages the unique architecture of th
 - **Intelligent Keepers via Micro-Cent Fees:** Hedera's fixed $0.0001 USD transaction fees allow the AI to act as a high-frequency "Intelligent Keeper", autonomously shifting positions between HBAR, USDC, and WBTC APYs without gas fees destroying the yield.
 - **Institutional Risk Alignment:** Following Bonzo's partnership with LedgerWorks for enterprise risk management, the AI’s system prompt mandates evaluating *Risk Scores* alongside APYs before routing user funds, ensuring risk-aware capital deployment.
 
+## 🔬 Advanced Judge Integrations (See `/scripts`)
+While the live Vercel UI focuses on user-facing Chat-to-DeFi intents, the codebase includes architectural prototypes addressing the full bounty scope:
+
+| Script | Description | Sample Output |
+|--------|-------------|---------------|
+| [`bonzo_headless_keeper.ts`](scripts/bonzo_headless_keeper.ts) | Autonomous "Intelligent Keeper" daemon that polls Bonzo Oracle APYs on a cron schedule and triggers Hedera Agent Kit rebalances when yield thresholds are crossed | [▶ View Output](docs/sample-output/bonzo_headless_keeper_output.md) |
+| [`hcs_audit_logger.ts`](scripts/hcs_audit_logger.ts) | Uses **Hedera Consensus Service (HCS)** to write immutable, MEV-resistant, publicly-verifiable on-chain receipts of every AI financial decision | [▶ View Output + Live HashScan Link](docs/sample-output/hcs_audit_logger_output.md) |
+| [`bonzo_advanced_abis.ts`](scripts/bonzo_advanced_abis.ts) | Full Aave V2 EVM lifecycle (`depositETH`, `withdrawETH`, `borrow`, `repay`) mapped to Hedera `ContractExecuteTransaction` — proving comprehensive Bonzo smart contract interoperability | [▶ View Output](docs/sample-output/bonzo_advanced_abis_output.md) |
+
 ---
-
-
 
 ## 🛠️ Architecture & Tech Stack
 
