@@ -27,8 +27,10 @@ While the live Vercel UI focuses on user-facing Chat-to-DeFi intents, the codeba
 
 | Script | Description | Sample Output |
 |--------|-------------|---------------|
-| [`bonzo_headless_keeper.ts`](scripts/bonzo_headless_keeper.ts) | Autonomous "Intelligent Keeper" daemon that polls Bonzo Oracle APYs on a cron schedule and triggers Hedera Agent Kit rebalances when yield thresholds are crossed | [▶ View Output](docs/sample-output/bonzo_headless_keeper_output.md) |
-| [`hcs_audit_logger.ts`](scripts/hcs_audit_logger.ts) | Uses **Hedera Consensus Service (HCS)** to write immutable, MEV-resistant, publicly-verifiable on-chain receipts of every AI financial decision | [▶ View Output + Live HashScan Link](docs/sample-output/hcs_audit_logger_output.md) |
+| [`demo_intelligent_keeper.ts`](scripts/demo_intelligent_keeper.ts) | **🏆 Bounty Demo.** Live Keeper Agent: hits real Bonzo API (captures 403 WAF), pivots to Hedera Mirror Node for vault balance, initializes Hedera Agent Kit, and broadcasts a real `depositETH` ABI call to the WETHGateway — catching `CONTRACT_REVERT_EXECUTED` with a live HashScan receipt | [▶ View Live Output](docs/sample-output/demo_intelligent_keeper.md) |
+| [`demo_hcs_audit_trail.ts`](scripts/demo_hcs_audit_trail.ts) | **🏆 Bounty Demo.** Live HCS Audit Trail: creates a real Topic on Hedera Testnet, submits a JSON AI decision payload, then reads the message back from the Mirror Node to prove nothing was mocked — with a live HashScan topic link | [▶ View Live Output](docs/sample-output/demo_hcs_audit_trail.md) |
+| [`bonzo_headless_keeper.ts`](scripts/bonzo_headless_keeper.ts) | Autonomous Keeper daemon that polls Bonzo Oracle APYs on a cron schedule and triggers Hedera Agent Kit rebalances when yield thresholds are crossed | [▶ View Output](docs/sample-output/bonzo_headless_keeper_output.md) |
+| [`hcs_audit_logger.ts`](scripts/hcs_audit_logger.ts) | Uses **Hedera Consensus Service (HCS)** to write immutable, MEV-resistant, publicly-verifiable on-chain receipts of every AI financial decision | [▶ View Output](docs/sample-output/hcs_audit_logger_output.md) |
 | [`bonzo_advanced_abis.ts`](scripts/bonzo_advanced_abis.ts) | Full Aave V2 EVM lifecycle (`depositETH`, `withdrawETH`, `borrow`, `repay`) mapped to Hedera `ContractExecuteTransaction` — proving comprehensive Bonzo smart contract interoperability | [▶ View Output](docs/sample-output/bonzo_advanced_abis_output.md) |
 
 ---
