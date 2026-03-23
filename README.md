@@ -4,6 +4,8 @@ A voice and text DeFi agent built on Hedera. Users describe an intent in plain l
 
 **[Live Demo](https://bonzo-concierge.vercel.app/)** | **[Demo Video](https://www.youtube.com/watch?v=EfWChKsFjTI)** | **[Pitch Deck (PDF)](Bonzo_Concierge_AI.pdf)**
 
+Hedera Hello Future Apex Hackathon — AI and Agents Track — Bonzo Finance Bounty
+
 ---
 
 ## Architecture
