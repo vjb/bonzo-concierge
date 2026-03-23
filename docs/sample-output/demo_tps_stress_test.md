@@ -1,4 +1,6 @@
-## Sample Output: `scripts/demo_tps_stress_test.ts`
+## `scripts/demo_tps_stress_test.ts`
+
+Fires 8 concurrent `TransferTransaction`s via `Promise.all` and measures how long all receipts take to come back from the Hedera network.
 
 ```
 Run: npx tsx scripts/demo_tps_stress_test.ts
@@ -8,19 +10,19 @@ Network: Hedera Testnet
 
 ```
 =========================================================
-⚡ BONZO CONCIERGE: CONCURRENT TPS STRESS TEST
+BONZO CONCIERGE: CONCURRENT TPS STRESS TEST
 =========================================================
 
 [1] Preparing 8 concurrent TransferTransactions...
-    Each sends 1 tinybar → Bonzo Vault (0.0.7308509)
+    Each sends 1 tinybar to Bonzo Vault (0.0.7308509)
 
 [2] Firing all 8 transactions via Promise.all...
 
 [3] Results:
- ✅ Transactions Submitted : 8
- ✅ Successful Receipts   : 8/8
- ⏱️  Total Execution Time  : 2.31s
- 🚀 Effective TPS         : 3.47 tx/s
+ Transactions Submitted : 8
+ Successful Receipts   : 8/8
+ Total Execution Time  : 2.31s
+ Effective TPS         : 3.47 tx/s
 
  Batch Transaction IDs:
  [1] 0.0.8327760@1774229311.403338448
@@ -32,18 +34,12 @@ Network: Hedera Testnet
  [7] 0.0.8327760@1774229309.473849296
  [8] 0.0.8327760@1774229310.271355401
 
- 🔗 Proof-of-Life (tx #1): https://hashscan.io/testnet/transaction/0.0.8327760-1774229311-403338448
+ Proof-of-Life (tx #1): https://hashscan.io/testnet/transaction/0.0.8327760-1774229311-403338448
 
 =========================================================
- 📝 Note: On Hedera, all 8 txs achieve finality in the
-    same ~3-5s Hashgraph consensus window. On Ethereum, a single
-    wallet can only have ONE pending tx — this batch would fail.
+
+Note: On Hedera, all 8 txs achieve finality in the same ~3-5s consensus window.
+On Ethereum, a single wallet can only have one pending tx at a time.
+
 =========================================================
 ```
-
-### Key Proof Points for Judges
-- **8/8 receipts**: Every concurrent transaction finalized with `SUCCESS` — no dropped txs
-- **2.31s total**: All 8 transactions reached Hashgraph consensus in under one consensus window
-- **3.47 tx/s**: Effective TPS from a single agent wallet — scales linearly with batch size
-- **All tx IDs are real**: Each `0.0.8327760@...` ID is verifiable on HashScan
-- **Proof-of-Life (clickable):** https://hashscan.io/testnet/transaction/0.0.8327760-1774229311-403338448
