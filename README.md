@@ -79,6 +79,8 @@ Two standalone scripts prove deep Hedera ecosystem integration against the live 
 |--------|---------------|-------------|
 | [`demo_intelligent_keeper.ts`](scripts/demo_intelligent_keeper.ts) | **Bonzo Bounty: Intelligent Keeper.** Hits real Bonzo API (captures HTTP 403 WAF), queries Mirror Node for live vault balance, initializes Hedera Agent Kit (43 tools), broadcasts real `depositETH` ABI call → catches `CONTRACT_REVERT_EXECUTED` with live HashScan receipt | [▶ View Output](docs/sample-output/demo_intelligent_keeper.md) |
 | [`demo_hcs_audit_trail.ts`](scripts/demo_hcs_audit_trail.ts) | **HCS Transparency.** Creates a real Topic on Hedera Testnet, submits a JSON AI decision payload, waits for propagation, then reads the message back from the Mirror Node to prove nothing was mocked | [▶ View Output](docs/sample-output/demo_hcs_audit_trail.md) |
+| [`demo_auto_account_creator.ts`](scripts/demo_auto_account_creator.ts) | **Success: Account Growth.** Generates a real ECDSA keypair, derives an EVM-compatible address, and executes a live `AccountCreateTransaction` — provisioning a new Hedera account seeded with 0.1 HBAR from the agent treasury | [▶ View Output](docs/sample-output/demo_auto_account_creator.md) |
+| [`demo_tps_stress_test.ts`](scripts/demo_tps_stress_test.ts) | **Success: Network TPS.** Fires 8 concurrent `TransferTransaction`s via `Promise.all` — all 8 achieve `SUCCESS` in a single ~2.3s Hashgraph consensus window, demonstrating server-side agent batching that's impossible on Ethereum | [▶ View Output](docs/sample-output/demo_tps_stress_test.md) |
 
 Run either script locally:
 ```bash
