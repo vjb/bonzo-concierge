@@ -8,6 +8,20 @@ A voice and text DeFi agent built on Hedera. Users describe an intent in plain l
 
 The frontend is a Next.js chat interface with optional ElevenLabs TTS. An OpenAI intent router dispatches to typed tool calls implemented with `@hashgraph/sdk` and the Hedera Agent Kit. The agent operates a treasury account (`0.0.8327760`) and signs all transactions server-side.
 
+Six tools are available in the chat:
+
+| Tool | What it does |
+|---|---|
+| `check_balance` | Query HBAR balance via Mirror Node |
+| `get_bonzo_apys` | Fetch live Bonzo supply/borrow rates |
+| `check_bonzo_position` | Read the user's Bonzo lending positions |
+| `supply_to_bonzo` | Transfer HBAR to Bonzo vault; logs the action to HCS via `coreConsensusPlugin` |
+| `transfer_hbar` | Send HBAR to any account |
+| `schedule_harvest` | Create a native `ScheduleCreateTransaction` via `coreAccountPlugin` with `schedulingParams.isScheduled=true` |
+
+`supply_to_bonzo` fires a `submit_topic_message_tool` call after each successful transfer, writing a structured JSON audit record to an HCS topic. `schedule_harvest` produces a real Hedera schedule entity (co-signable, no external keeper) and returns the Schedule ID.
+
+
 ![screenshot](docs/screenshot.png)
 
 ---
