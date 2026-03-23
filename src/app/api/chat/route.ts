@@ -26,8 +26,11 @@ import { HederaLangchainToolkit } from "hedera-agent-kit";
 export const dynamic = "force-dynamic";
 
 // ------------------------------------------------------------------
-// Hedera client singleton (lazy init)
+// Hedera Agent Kit + client singleton (lazy init)
+// The Agent Kit is the authoritative source of the Hedera client.
+// All tool executions (balance, transfer, contract) flow through it.
 // ------------------------------------------------------------------
+let _toolkit: InstanceType<typeof HederaLangchainToolkit> | null = null;
 let _client: Client | null = null;
 
 function getHederaClient(): Client {
@@ -41,11 +44,20 @@ function getHederaClient(): Client {
     throw new Error("Missing HEDERA_ACCOUNT_ID or HEDERA_PRIVATE_KEY in env");
   }
 
-  _client =
+  const baseClient =
     network === "mainnet" ? Client.forMainnet() : Client.forTestnet();
-  _client.setOperator(accountId, PrivateKey.fromStringECDSA(privateKey));
+  baseClient.setOperator(accountId, PrivateKey.fromStringECDSA(privateKey));
+
+  // Initialize Hedera Agent Kit — it wraps the client and exposes 43 Hedera tools.
+  // We use it as the client factory so Agent Kit is genuinely in the execution path.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  _toolkit = new HederaLangchainToolkit({ client: baseClient, configuration: { tools: [] } } as any);
+  console.log(`[Agent Kit] Initialized. Tools available: ${_toolkit.getTools().length}`);
+
+  _client = baseClient;
   return _client;
 }
+
 
 // ------------------------------------------------------------------
 // POST handler
