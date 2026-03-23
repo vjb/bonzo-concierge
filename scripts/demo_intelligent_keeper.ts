@@ -42,9 +42,12 @@ const DIVIDER = "=========================================================";
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function hashscanUrl(txId: string): string {
-  // Convert "0.0.8327760@1711234567.123456789" → hashscan format "0.0.8327760-1711234567-123456789"
-  const normalized = txId.replace("@", "-").replace(".", "-").replace(".", "-");
-  return `https://hashscan.io/testnet/transaction/${normalized}`;
+  // Input:  "0.0.8327760@1774227144.559792617"
+  // Output: "0.0.8327760-1774227144-559792617"
+  // The account ID dots (shard.realm.num) must be preserved.
+  const [accountPart, timePart] = txId.split("@");
+  const normalizedTime = timePart?.replace(".", "-") ?? "";
+  return `https://hashscan.io/testnet/transaction/${accountPart}-${normalizedTime}`;
 }
 
 async function run() {

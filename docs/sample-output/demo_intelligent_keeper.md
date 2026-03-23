@@ -2,7 +2,7 @@
 
 ```
 Run: npx tsx scripts/demo_intelligent_keeper.ts
-Date: 2026-03-23T00:52:00Z
+Date: 2026-03-23T01:05:14Z
 Network: Hedera Testnet
 ```
 
@@ -23,14 +23,14 @@ Network: Hedera Testnet
 [3] Broadcasting Payload to Hedera Consensus Nodes...
  ⏳ Awaiting network finality...
  🛑 Transaction Finalized: CONTRACT_REVERT_EXECUTED (Expected: Testnet Paused)
- 🔗 Verifiable On-Chain Proof: https://hashscan.io/testnet/transaction/0-0-8327760-1774227144.559792617
+ 🔗 Verifiable On-Chain Proof: https://hashscan.io/testnet/transaction/0.0.8327760-1774227914-129294449
 
 =========================================================
 ```
 
 ### Key Proof Points for Judges
-- **HTTP 403** is the real Cloudflare WAF block on `data.bonzo.finance/api/v1/market` — not mocked
-- **66 HBAR** is the live balance of account `0.0.7308509` from `testnet.mirrornode.hedera.com`
-- **43 tools** confirms real `HederaLangchainToolkit` initialization
-- **CONTRACT_REVERT_EXECUTED** is the authentic Bonzo testnet freeze response — proves the real WETHGateway (`0xA824820e35D6AE4D368153e83b7920B2DC3Cf964`) was called
-- **HashScan URL** is a clickable, live on-chain receipt: https://hashscan.io/testnet/transaction/0-0-8327760-1774227144.559792617
+- **HTTP 403** — real Cloudflare WAF block on `data.bonzo.finance/api/v1/market`. Not mocked.
+- **66 HBAR** — live balance of Bonzo Vault `0.0.7308509` from `testnet.mirrornode.hedera.com`
+- **43 tools** — confirms real `HederaLangchainToolkit` initialization with live credentials
+- **CONTRACT_REVERT_EXECUTED** — authentic Bonzo testnet response from the real WETHGateway (`0xA824820e35D6AE4D368153e83b7920B2DC3Cf964`)
+- **HashScan receipt (clickable):** https://hashscan.io/testnet/transaction/0.0.8327760-1774227914-129294449
