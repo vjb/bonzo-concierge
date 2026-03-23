@@ -478,7 +478,7 @@ The user's Hedera account is ${operatorAccountId}. Always be concise and profess
             const result = await transferTool.execute(client as any, ctx, {
               transfers: [{ accountId: "0.0.7308509", amount: 0.00000001 }],
               sourceAccountId: operatorId,
-              transactionMemo: "Bonzo Concierge: Auto-Harvest",
+              transactionMemo: `Bonzo Concierge: Auto-Harvest ${new Date().toISOString()}`,
               schedulingParams: { isScheduled: true },
             });
 
