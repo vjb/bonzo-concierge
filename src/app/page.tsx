@@ -301,13 +301,13 @@ export default function ChatPage() {
         {/* Suggested Prompts Array */}
         <div className="flex flex-wrap gap-2 mb-4">
           {[
-            "What are the best yields on Bonzo?", 
+            "What are the best yields on Bonzo?",
             "What are my Bonzo positions?",
-            "Pin 1113: Supply 5 HBAR to Bonzo", 
-            "Given current yields and risk scores, what's a safe strategy?",
-            "Allocate 10 HBAR safely! Pin 1113",
-            "What's my HBAR balance?", 
-            "Pin 1113: Send 1 HBAR to 0.0.7308509"
+            "Pin 1113: Supply 5 HBAR to Bonzo",
+            "Pin 1113: Schedule a Bonzo auto-harvest",
+            "Allocate 10 HBAR safely. Pin 1113",
+            "What's my HBAR balance?",
+            "Given current yields and risk scores, what's the safest strategy?",
           ].map((s) => (
             <button
               key={s}
@@ -418,6 +418,8 @@ function ExecutionTrace({ tool }: { tool: ToolInvocationPart["toolInvocation"] }
     transfer_hbar: "Executing HBAR transfer",
     get_bonzo_apys: "Fetching Bonzo protocol yields",
     supply_to_bonzo: "Supplying to Bonzo lending pool",
+    check_bonzo_position: "Checking Bonzo positions",
+    schedule_harvest: "Scheduling auto-harvest via Agent Kit",
   };
   const displayName = displayNames[tool.toolName] ?? tool.toolName;
 
