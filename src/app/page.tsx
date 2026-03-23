@@ -183,7 +183,9 @@ export default function ChatPage() {
     } catch { /* ignore */ }
   }, []);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setMounted(true), []);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { if (mounted) fetchBalance(); }, [mounted, fetchBalance]);
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -192,6 +194,7 @@ export default function ChatPage() {
 
   // Refresh balance whenever AI finishes responding
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (status === "ready" && messages.length > 0) fetchBalance();
   }, [status, messages.length, fetchBalance]);
 

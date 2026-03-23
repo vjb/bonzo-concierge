@@ -21,7 +21,6 @@ import {
   AccountId,
   TransferTransaction,
   Hbar,
-  HbarUnit,
 } from "@hashgraph/sdk";
 import * as dotenv from "dotenv";
 dotenv.config();

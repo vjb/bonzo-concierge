@@ -69,6 +69,7 @@ async function run() {
   // ── Step 2: Execute via Agent Kit ─────────────────────────────────────────
   console.log("[2] Broadcasting TokenCreateTransaction via Agent Kit to Hedera Testnet...");
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const result = await createTokenTool.execute(client as any, ctx, {
     tokenName: TOKEN_NAME,
     tokenSymbol: TOKEN_SYMBOL,

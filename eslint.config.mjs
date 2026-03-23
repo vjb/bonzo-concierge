@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Non-app scripts excluded from strict TS linting:
+    "test_accounts.js",
   ]),
 ]);
 

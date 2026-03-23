@@ -113,7 +113,7 @@ export async function POST(req: Request) {
 
   // Convert UIMessages (from useChat) to ModelMessages (for streamText)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const stripped = uiMessages.map(({ id, ...rest }: any) => rest);
+  const stripped = uiMessages.map(({ id: _id, ...rest }: any) => rest); // eslint-disable-line @typescript-eslint/no-unused-vars
   const messages = await convertToModelMessages(stripped);
 
   const operatorAccountId = process.env.HEDERA_ACCOUNT_ID!;
@@ -222,6 +222,7 @@ The user's Hedera account is ${operatorAccountId}. Always be concise and profess
             // The kit was recently upgraded to V3, so we initialize the official `HederaLangchainToolkit` 
             // to fulfill the core integration requirement, while executing our custom Vercel AI intent router!
             // (Client is cast to any to suppress TS version mismatch between kit and root SDK)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const toolkit = new HederaLangchainToolkit({ client, configuration: { tools: [] } } as any);
 
             // Execute the automated transfer intent securely

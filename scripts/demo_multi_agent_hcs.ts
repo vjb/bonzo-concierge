@@ -78,6 +78,7 @@ async function run() {
   // ── Step 1: Create the shared coordination topic ────────────────────────────
   console.log("[1] Creating Shared Agent Coordination Channel via Agent Kit...");
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const topicResult = await createTopicTool.execute(client as any, ctx, {
     topicMemo: "Bonzo Concierge: Multi-Agent Coordination Channel",
   });
@@ -103,6 +104,7 @@ async function run() {
   });
   console.log(` Payload: ${proposalPayload}`);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const proposalResult = await submitMessageTool.execute(client as any, ctx, {
     topicId,
     message: proposalPayload,
@@ -128,6 +130,7 @@ async function run() {
   });
   console.log(` Payload: ${approvalPayload}`);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const approvalResult = await submitMessageTool.execute(client as any, ctx, {
     topicId,
     message: approvalPayload,

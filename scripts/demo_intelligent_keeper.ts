@@ -77,6 +77,7 @@ async function run() {
   const newKey = PrivateKey.generateECDSA();
   const evmAddress = newKey.publicKey.toEvmAddress();
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const acctResult = await createAccountTool.execute(client as any, ctx, {
     initialBalance: 0.1,
     publicKey: newKey.publicKey.toStringRaw(),

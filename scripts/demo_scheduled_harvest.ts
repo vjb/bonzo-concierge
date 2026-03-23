@@ -63,6 +63,7 @@ async function run() {
   // ── Step 3: Execute via the kit with schedulingParams.isScheduled = true ───
   console.log("[3] Broadcasting Scheduled Transaction via Agent Kit to Hedera Testnet...");
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const result = await transferTool.execute(client as any, ctx, {
     transfers: [{ accountId: BONZO_VAULT_ACCOUNT, amount: 0.00000001 }],
     sourceAccountId: operatorId,
