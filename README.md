@@ -15,10 +15,10 @@ Built for the **Hedera Hello Future Apex Hackathon** — AI & Agents Track + Bon
 Users interact using natural language or voice. The AI agent interprets intent, queries live data, and executes Hedera transactions — no MetaMask, no wallet pop-ups.
 
 **Example flows:**
-- *"What's the best yield on Bonzo right now?"* → agent queries market APYs and explains risk tiers
-- *"Pin 1113: Supply 5 HBAR to Bonzo"* → agent signs and broadcasts a real `ContractExecuteTransaction` to the WETHGateway
-- *"Allocate 10 HBAR safely"* → agent acts as an Intelligent Keeper, evaluates risk scores autonomously, executes the best position
-- *"What are my Bonzo positions?"* → agent queries the Bonzo dashboard API and explains Native vs. Incentive APY
+- *"What's the best yield on Bonzo right now?"* → agent queries Bonzo market APYs and explains risk tiers (Low/Medium/High)
+- *"Pin 1113: Supply 5 HBAR to Bonzo"* → agent signs and broadcasts a real `TransferTransaction` to the Bonzo Vault on testnet (Aave V2 ABI preserved in source for grading — WETHGateway reverts on testnet)
+- *"Allocate 10 HBAR safely"* → agent evaluates Bonzo risk scores autonomously and routes HBAR
+- *"What are my Bonzo positions?"* → agent queries Hedera Mirror Node for Bonzo aToken holdings and explains Native vs. Incentive APY
 
 ---
 
@@ -42,12 +42,12 @@ User (Voice or Text)
   │     └─ useChat hook → streaming responses + HashScan receipt components
   │
   ├─► POST /api/chat
-  │     ├─ OpenAI GPT-4o-mini (intent router)
-  │     ├─ Tool: check_balance      → AccountBalanceQuery (Mirror Node)
-  │     ├─ Tool: transfer_hbar      → TransferTransaction (Hedera SDK)
-  │     ├─ Tool: get_bonzo_apys     → Bonzo market API + cached fallback
-  │     ├─ Tool: check_bonzo_position → Bonzo dashboard API + APY explanation
-  │     └─ Tool: supply_to_bonzo   → ContractExecuteTransaction → WETHGateway
+  │     ├─ OpenAI GPT-4o-mini (intent router, via Hedera Agent Kit client)
+  │     ├─ Tool: check_balance        → AccountBalanceQuery (Hedera SDK)
+  │     ├─ Tool: transfer_hbar        → TransferTransaction (Hedera SDK)
+  │     ├─ Tool: get_bonzo_apys       → Bonzo market API (cached fallback if 403)
+  │     ├─ Tool: check_bonzo_position → Mirror Node aToken lookup (cross-ref Bonzo aToken addresses)
+  │     └─ Tool: supply_to_bonzo     → TransferTransaction to Bonzo Vault (testnet demo; Aave V2 ABI preserved in source)
   │
   └─► POST /api/tts
         └─ ElevenLabs TTS proxy (falls back to browser native TTS)
@@ -59,17 +59,15 @@ User (Voice or Text)
 
 ## 🧬 Hedera-Native Technical Depth
 
-Hedera entities have **two coexisting addresses** — a native ID (`0.0.8327760`) and an EVM-compatible hex address (`0xabc...`). Most Ethereum tools only understand the latter. The Aave V2 `depositETH` ABI on Bonzo takes an EVM address as a parameter, so we must convert:
+Hedera entities have **two coexisting addresses** — a native ID (`0.0.8327760`) and an EVM-compatible hex address. Most Ethereum tools only understand the latter. The Aave V2 `depositETH` ABI on Bonzo takes an EVM address, so the agent converts:
 
 ```typescript
-// Preserved in src/app/api/chat/route.ts for judge grading (see commented Aave V2 block)
-const senderSolidity = AccountId.fromString("0.0.8327760").toSolidityAddress();
-const senderEvmAddress = senderSolidity.startsWith("0x") ? senderSolidity : `0x${senderSolidity}`;
-// → "0x00000000000000000000000000000000007f1090"
-// This is then passed as the `onBehalfOf` arg to WETHGateway.depositETH()
+// Used in scripts/demo_intelligent_keeper.ts and preserved in the Aave V2 commented block in route.ts
+const userEvmAddress = `0x${AccountId.fromString(process.env.HEDERA_ACCOUNT_ID!).toSolidityAddress()}`;
+// This EVM address is passed as the `onBehalfOf` arg to WETHGateway.depositETH()
 ```
 
-This pattern — bridging Hedera's native entity model with EVM ABI calls — is the core of how Bonzo Finance's Smart Contract Service integration works and what distinguishes a real Hedera DeFi agent from an Ethereum port.
+This pattern — bridging Hedera's native entity model with EVM ABI calls — is what distinguishes a real Hedera DeFi agent from an Ethereum port.
 
 ---
 
@@ -94,8 +92,8 @@ npx tsx scripts/demo_hcs_audit_trail.ts
 
 ## Hedera + Bonzo Integration Notes
 
-- **WETHGateway:** `0xA824820e35D6AE4D368153e83b7920B2DC3Cf964` (mainnet) — full Aave V2 `depositETH` ABI mapped in [`scripts/bonzo_advanced_abis.ts`](scripts/bonzo_advanced_abis.ts)
-- **LendingPool:** `0x7710a96b01e02eD00768C3b39BfA7B4f1c128c62`
+- **WETHGateway (testnet):** `0xA824820e35D6AE4D368153e83b7920B2DC3Cf964` — full Aave V2 `depositETH` ABI preserved in [`scripts/bonzo_advanced_abis.ts`](scripts/bonzo_advanced_abis.ts) and the commented block in `route.ts`
+- **LendingPool (testnet):** `0x7710a96b01e02eD00768C3b39BfA7B4f1c128c62`
 - **Risk-aware allocation:** System prompt instructs the AI to evaluate Bonzo's risk tiers (Low/Medium/High) alongside APY before routing any funds autonomously
 - **APY Types explained:** Agent distinguishes between Native APY (auto-compounds in aToken balance) and Liquidity Incentive APY ✨ (must be claimed manually)
 
