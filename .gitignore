@@ -1,5 +1,8 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# Skill source documents — large LLM context dumps, distilled into SKILL.md
+.agent/skills/**/llms-full.txt
+
 # dependencies
 /node_modules
 /.pnp
