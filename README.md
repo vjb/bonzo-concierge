@@ -103,8 +103,8 @@ Create `.env`:
 OPENAI_API_KEY=sk-...
 ELEVEN_LABS_KEY=sk_...        # Optional — falls back to browser TTS
 
-HEDERA_ACCOUNT_ID=0.0.XXXXXX  # Agent's sovereign wallet
-HEDERA_PRIVATE_KEY=0x...
+HEDERA_ACCOUNT_ID=0.0.8327760  # Agent's sovereign wallet (view on HashScan)
+HEDERA_PRIVATE_KEY=0x...        # Keep this secret
 HEDERA_NETWORK=testnet
 HEDERA_RPC_URL=https://testnet.hashio.io/api
 ```
