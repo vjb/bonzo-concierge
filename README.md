@@ -2,6 +2,8 @@
 
 A voice and text DeFi agent built on Hedera. Users describe an intent in plain language; the agent evaluates the Bonzo Finance market, makes a risk-adjusted decision, and executes on-chain. Every transaction produces a HashScan receipt.
 
+**[Live Demo](https://bonzo-concierge.vercel.app/)** | **[Demo Video](https://www.youtube.com/watch?v=EfWChKsFjTI)** | **[Pitch Deck (PDF)](Bonzo_Concierge_AI.pdf)**
+
 ---
 
 ## Architecture
@@ -39,7 +41,7 @@ Hedera's properties directly affect what an autonomous agent can do safely:
 
 ## Demo scripts
 
-Four standalone scripts that prove each layer of the stack works on live testnet. All use the Hedera Agent Kit. None mock anything.
+Four standalone scripts that prove each layer of the stack works on live testnet. All use the Hedera Agent Kit. The Bonzo WETHGateway is paused on testnet, so the keeper script falls back to a direct vault transfer and catches the expected contract revert for audit purposes.
 
 ---
 
