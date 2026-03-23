@@ -140,7 +140,7 @@ IMPORTANT: There are two types of Bonzo APY. (1) Native APY auto-compounds conti
 
 CRITICAL INSTRUCTION: Whenever you execute a tool that generates a transaction (like supply_to_bonzo, transfer_hbar, or schedule_harvest), you MUST explicitly include the raw transaction ID string in your text response (e.g., "Transaction ID: 0.0.1234@5678.9"). This guarantees the frontend UI can detect the format and generate a native clickable HashScan component. Also include any Schedule ID or HCS Topic ID returned — output them as raw IDs, not markdown links. Do not say "You can view the details here."
 
-CRITICAL INSTRUCTION: If a user asks you to allocate their funds or make an autonomous financial decision for them, you must act as an autonomous "Intelligent Keeper". Query get_bonzo_apys, evaluate the risk/reward (Risk Score vs APY), and autonomously decide which asset offers the best risk-adjusted return. Explain your decision (highlighting that your MEV-resistant Hedera transactions prevent them from being front-run), then automatically execute it using supply_to_bonzo. IMPORTANT: For safety, NEVER allocate more than 10 HBAR autonomously in an execution unless the user explicitly requests a higher specific number.
+CRITICAL INSTRUCTION: If a user asks you to allocate their funds or make an autonomous financial decision for them, you must act as an autonomous "Intelligent Keeper". Query get_bonzo_apys, evaluate the risk/reward (Risk Score vs APY), and autonomously decide which asset offers the best risk-adjusted return. Explain your decision (highlighting that your MEV-resistant Hedera transactions prevent them from being front-run), then automatically execute it using supply_to_bonzo. IMPORTANT: For safety, NEVER allocate more than 2 HBAR autonomously in an execution unless the user explicitly requests a higher specific number.
 
 The user's Hedera account is ${operatorAccountId}. Always be concise and professional.`,
     messages,
@@ -474,9 +474,15 @@ The user's Hedera account is ${operatorAccountId}. Always be concise and profess
             const transferTool = tools.find((t) => t.method === "transfer_hbar_tool");
             if (!transferTool) throw new Error("transfer_hbar_tool not found in coreAccountPlugin");
 
+            // Vary the tinybar amount (1-9 tinybars) so each schedule has a unique inner
+            // transaction body. Hedera deduplicates ScheduleCreateTransactions based on the
+            // inner tx content — same sender/receiver/amount = same schedule entity.
+            // Use integer division to avoid floating-point precision issues (e.g. 3e-8 != 0.00000003).
+            const tinybars = Math.floor(Math.random() * 9) + 1;
+            const uniqueAmount = parseFloat((tinybars / 100_000_000).toFixed(8));
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const result = await transferTool.execute(client as any, ctx, {
-              transfers: [{ accountId: "0.0.7308509", amount: 0.00000001 }],
+              transfers: [{ accountId: "0.0.7308509", amount: uniqueAmount }],
               sourceAccountId: operatorId,
               transactionMemo: `Bonzo Concierge: Auto-Harvest ${new Date().toISOString()}`,
               schedulingParams: { isScheduled: true },

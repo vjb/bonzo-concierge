@@ -303,9 +303,9 @@ export default function ChatPage() {
           {[
             "What are the best yields on Bonzo?",
             "What are my Bonzo positions?",
-            "Pin 1113: Supply 5 HBAR to Bonzo",
+            "Pin 1113: Supply 1 HBAR to Bonzo",
             "Pin 1113: Schedule a Bonzo auto-harvest",
-            "Allocate 10 HBAR safely. Pin 1113",
+            "Allocate 2 HBAR safely. Pin 1113",
             "What's my HBAR balance?",
             "Given current yields and risk scores, what's the safest strategy?",
           ].map((s) => (
