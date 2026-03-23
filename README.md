@@ -82,10 +82,12 @@ Two standalone scripts prove deep Hedera ecosystem integration against the live 
 | [`demo_auto_account_creator.ts`](scripts/demo_auto_account_creator.ts) | **Success: Account Growth.** Generates a real ECDSA keypair, derives an EVM-compatible address, and executes a live `AccountCreateTransaction` — provisioning a new Hedera account seeded with 0.1 HBAR from the agent treasury | [▶ View Output](docs/sample-output/demo_auto_account_creator.md) |
 | [`demo_tps_stress_test.ts`](scripts/demo_tps_stress_test.ts) | **Success: Network TPS.** Fires 8 concurrent `TransferTransaction`s via `Promise.all` — all 8 achieve `SUCCESS` in a single ~2.3s Hashgraph consensus window, demonstrating server-side agent batching that's impossible on Ethereum | [▶ View Output](docs/sample-output/demo_tps_stress_test.md) |
 
-Run either script locally:
+Run any script locally:
 ```bash
-npx tsx scripts/demo_intelligent_keeper.ts
-npx tsx scripts/demo_hcs_audit_trail.ts
+npx tsx scripts/demo_intelligent_keeper.ts   # Bonzo bounty demo
+npx tsx scripts/demo_hcs_audit_trail.ts      # HCS audit trail
+npx tsx scripts/demo_auto_account_creator.ts # Account growth demo
+npx tsx scripts/demo_tps_stress_test.ts      # Concurrent TPS demo
 ```
 
 > 🛡️ **Testnet Note:** Bonzo's EVM lending pool is currently paused on testnet. `CONTRACT_REVERT_EXECUTED` is the authentic network response — click the HashScan link in the output to verify the on-chain attempt.
