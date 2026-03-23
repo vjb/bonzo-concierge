@@ -307,10 +307,10 @@ The user's Hedera account is ${operatorAccountId}. Always be concise and profess
             
             // Rather than letting a sponsor's testnet freeze ruin the user experience, we engineered 
             // the Concierge to be resilient. The agent safely falls back to a native Hedera TransferTransaction 
-            // directly to the Vault's Account ID (0.0.1234). This ensures the live demo remains 100% functional, 
+            // directly to the Vault's Account ID (0.0.7308509). This ensures the live demo remains 100% functional, 
             // user funds move securely, and the HashScan receipts stay green while fulfilling the strict 
             // Hedera Agent Kit initialization requirements natively below.
-            const bonzoVaultTreasury = "0.0.1234";
+            const bonzoVaultTreasury = "0.0.7308509";
             const senderAccountId = process.env.HEDERA_ACCOUNT_ID!;
             
             const tx = new TransferTransaction()

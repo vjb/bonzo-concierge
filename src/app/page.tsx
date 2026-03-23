@@ -306,7 +306,7 @@ export default function ChatPage() {
             "Given current yields and risk scores, what's a safe strategy?",
             "Allocate 10 HBAR safely! Pin 1113",
             "What's my HBAR balance?", 
-            "Pin 1113: Send 1 HBAR to 0.0.1234"
+            "Pin 1113: Send 1 HBAR to 0.0.7308509"
           ].map((s) => (
             <button
               key={s}
