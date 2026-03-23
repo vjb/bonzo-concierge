@@ -302,6 +302,7 @@ export default function ChatPage() {
         <div className="flex flex-wrap gap-2 mb-4">
           {[
             "What are the best yields on Bonzo?", 
+            "What are my Bonzo positions?",
             "Pin 1113: Supply 5 HBAR to Bonzo", 
             "Given current yields and risk scores, what's a safe strategy?",
             "Allocate 10 HBAR safely! Pin 1113",

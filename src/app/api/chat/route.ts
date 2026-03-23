@@ -69,10 +69,14 @@ You can:
 2. Transfer HBAR using transfer_hbar.
 3. Check Bonzo protocol yields (APY) using get_bonzo_apys.
 4. Supply HBAR to the Bonzo lending pool using supply_to_bonzo.
+5. Check the user's live Bonzo supply/borrow positions using check_bonzo_position.
 
 When a user asks about yields, rates, or APYs on Bonzo, use get_bonzo_apys. When answering these complex data queries, you MUST output a clean, simple bulleted list in your text response so the user can read the details. NEVER output a raw markdown table, as the UI cannot render it.
+When a user asks about their Bonzo positions, health factor, what they have supplied/borrowed, or their protocol exposure, use check_bonzo_position.
 When a user wants to supply, deposit, or earn yield with their HBAR on Bonzo, use supply_to_bonzo.
 When a user wants to send or transfer HBAR to another address, use transfer_hbar.
+
+IMPORTANT: There are two types of Bonzo APY. (1) Native APY auto-compounds continuously in the user's aToken balance — no action needed. (2) Liquidity Incentive APY (marked ✨) must be claimed manually. Always clarify this distinction when users ask about yield.
 
 CRITICAL INSTRUCTION: Whenever you execute a tool that generates a transaction (like supply_to_bonzo or transfer_hbar), you MUST explicitly include the raw transaction ID string in your text response (e.g., "Transaction ID: 0.0.1234@5678.9"). This guarantees the frontend UI can detect the format and generate a native clickable HashScan component. Because the UI generates the link natively, you MUST NEVER generate your own markdown link or hyperlinked text to Hashscan. Do not say "You can view the details here." Just output the raw ID string.
 
@@ -236,7 +240,45 @@ The user's Hedera account is ${operatorAccountId}. Always be concise and profess
         }
       }),
 
-      // ── Tool 4: Bonzo Supply Execution ──
+      // ── Tool 4: Bonzo Live Position Check ──
+      check_bonzo_position: tool({
+        description: "Check the user's live Bonzo Finance supply/borrow positions, health factor, and protocol exposure by querying the Bonzo dashboard API for their specific account.",
+        inputSchema: z.object({}),
+        execute: async () => {
+          await new Promise(resolve => setTimeout(resolve, 1200));
+
+          try {
+            const controller = new AbortController();
+            const id = setTimeout(() => controller.abort(), 3000);
+            const accountId = process.env.HEDERA_ACCOUNT_ID!;
+            const res = await fetch(`https://data.bonzo.finance/dashboard/${accountId}`, {
+              signal: controller.signal,
+              headers: { "Accept": "application/json" },
+            });
+            clearTimeout(id);
+            if (res.ok) {
+              const data = await res.json();
+              return {
+                success: true,
+                message: "Successfully retrieved Bonzo position data.",
+                position: data,
+              };
+            }
+          } catch (error) {
+            console.log("[check_bonzo_position] Dashboard API unavailable, returning guidance.", error);
+          }
+
+          // Fallback: the API is Cloudflare-protected. Return protocol-accurate guidance.
+          return {
+            success: true,
+            message: "Bonzo dashboard API is currently protected. Please visit https://app.bonzo.finance to view your live positions, health factor, and claim any pending Liquidity Incentive APY (✨) rewards.",
+            position: null,
+            hint: "Your supply positions earn Native APY automatically via aToken balance growth. Any ✨ Liquidity Incentive APY rewards must be claimed manually via the 'Claim' button on the Bonzo dashboard."
+          };
+        },
+      }),
+
+      // ── Tool 5: Bonzo Supply Execution ──
       supply_to_bonzo: tool({
         description:
           "Supply HBAR to the Bonzo Finance lending pool to earn yield.",
