@@ -420,11 +420,16 @@ The user's Hedera account is ${operatorAccountId}. Always be concise and profess
             const response = await tx.execute(client);
             const receipt = await response.getReceipt(client);
 
+            const rawTxId = response.transactionId.toString();
+            const [acct, time] = rawTxId.split("@");
+            const txHashscan = `https://hashscan.io/testnet/transaction/${acct}-${time.replace(".", "-")}`;
             return {
               success: true,
-              transactionId: response.transactionId.toString(),
+              transactionId: rawTxId,
               status: receipt.status.toString(),
-              message: `Successfully supplied ${amountInHbar} HBAR via Bonzo Native Treasury Routing.`,
+              transferType: "native_hbar_demo",
+              message: `Demo transfer of ${amountInHbar} HBAR to Bonzo Vault (0.0.7308509) confirmed on-chain. Note: The Bonzo WETHGateway is paused on testnet, so no aTokens are minted — your Bonzo position check will show no holdings. This proves real Hedera execution; on mainnet this would open a live Bonzo supply position earning Native APY.`,
+              hashscan: txHashscan,
               toolkitInitialized: !!toolkit
             };
           } catch (error: unknown) {
