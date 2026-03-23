@@ -242,38 +242,78 @@ The user's Hedera account is ${operatorAccountId}. Always be concise and profess
 
       // ── Tool 4: Bonzo Live Position Check ──
       check_bonzo_position: tool({
-        description: "Check the user's live Bonzo Finance supply/borrow positions, health factor, and protocol exposure by querying the Bonzo dashboard API for their specific account.",
+        description: "Check the user's live Bonzo Finance supply/borrow positions by querying the Hedera Mirror Node for known Bonzo aToken holdings in the agent's wallet.",
         inputSchema: z.object({}),
         execute: async () => {
-          await new Promise(resolve => setTimeout(resolve, 1200));
+          const accountId = process.env.HEDERA_ACCOUNT_ID!;
+          const MIRROR = "https://testnet.mirrornode.hedera.com";
 
+          // Known Bonzo aToken EVM addresses → human labels (from Bonzo SKILL.md)
+          const BONZO_ATOKENS: Record<string, { label: string; type: "supply" | "debt" }> = {
+            "0x6e96a607f2f5657b39bf58293d1a006f9415af32": { label: "aHBAR",  type: "supply" },
+            "0xb7687538c7f4cad022d5e97cc778d0b46457c5db": { label: "aUSDC",  type: "supply" },
+            "0x40ebc87627fe4689567c47c8c9c84edc4cf29132": { label: "aHBARX", type: "supply" },
+            "0xcd5a1ff3ad6edd7e85ae6de3854f3915dd8c9103": { label: "dHBAR",  type: "debt"   },
+            "0x8a90c2f80fc266e204cb37387c69ea2ed42a3cc1": { label: "dUSDC",  type: "debt"   },
+          };
+
+          // Step 1: resolve EVM addresses → HTS token IDs via Mirror Node
+          const evmToHts: Record<string, string> = {};
+          await Promise.all(
+            Object.keys(BONZO_ATOKENS).map(async (evm) => {
+              try {
+                const r = await fetch(`${MIRROR}/api/v1/contracts/${evm}`);
+                if (r.ok) {
+                  const d = await r.json();
+                  if (d?.contract_id) evmToHts[evm] = d.contract_id;
+                }
+              } catch { /* skip */ }
+            })
+          );
+
+          // Step 2: fetch the agent's HTS token list from Mirror Node
+          let heldTokens: Array<{ token_id: string; balance: number }> = [];
           try {
-            const controller = new AbortController();
-            const id = setTimeout(() => controller.abort(), 3000);
-            const accountId = process.env.HEDERA_ACCOUNT_ID!;
-            const res = await fetch(`https://data.bonzo.finance/dashboard/${accountId}`, {
-              signal: controller.signal,
-              headers: { "Accept": "application/json" },
-            });
-            clearTimeout(id);
-            if (res.ok) {
-              const data = await res.json();
-              return {
-                success: true,
-                message: "Successfully retrieved Bonzo position data.",
-                position: data,
-              };
+            const r = await fetch(`${MIRROR}/api/v1/accounts/${accountId}/tokens?limit=100`);
+            if (r.ok) {
+              const d = await r.json();
+              heldTokens = d?.tokens ?? [];
             }
-          } catch (error) {
-            console.log("[check_bonzo_position] Dashboard API unavailable, returning guidance.", error);
+          } catch { /* network error */ }
+
+          // Step 3: cross-reference held tokens against known Bonzo aToken IDs
+          const heldIds = new Set(heldTokens.map((t) => t.token_id));
+          const positions: Array<{ label: string; type: string; balance: number; tokenId: string }> = [];
+
+          for (const [evm, info] of Object.entries(BONZO_ATOKENS)) {
+            const htsId = evmToHts[evm];
+            if (htsId && heldIds.has(htsId)) {
+              const held = heldTokens.find((t) => t.token_id === htsId);
+              positions.push({
+                label: info.label,
+                type: info.type,
+                balance: (held?.balance ?? 0) / 1e8,
+                tokenId: htsId,
+              });
+            }
           }
 
-          // Fallback: the API is Cloudflare-protected. Return protocol-accurate guidance.
+          if (positions.length > 0) {
+            return {
+              success: true,
+              accountId,
+              positions,
+              message: `Found ${positions.length} Bonzo position(s) in the agent wallet.`,
+              note: "Native APY accrues automatically in the aToken balance. Any ✨ Liquidity Incentive APY must be claimed manually at app.bonzo.finance.",
+            };
+          }
+
           return {
             success: true,
-            message: "Bonzo dashboard API is currently protected. Please visit https://app.bonzo.finance to view your live positions, health factor, and claim any pending Liquidity Incentive APY (✨) rewards.",
-            position: null,
-            hint: "Your supply positions earn Native APY automatically via aToken balance growth. Any ✨ Liquidity Incentive APY rewards must be claimed manually via the 'Claim' button on the Bonzo dashboard."
+            accountId,
+            positions: [],
+            message: `No Bonzo aToken holdings detected in wallet ${accountId} via Hedera Mirror Node. No active supply positions at this time.`,
+            note: "To open a position, try: 'Supply 5 HBAR to Bonzo'. Native APY accrues automatically in the aToken balance. ✨ Liquidity Incentive APY must be claimed manually.",
           };
         },
       }),
